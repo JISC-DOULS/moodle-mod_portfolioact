@@ -1,0 +1,73 @@
+/*
+classes defined here are included by the theme automatically
+*/
+
+.portfolioact-template-sort-arrow-up {cursor:pointer;}
+.portfolioact-template-sort-arrow-down {cursor:pointer;}
+.portfolioact_template_spinner {}
+.portfolioact-template-update-button {float:left;margin-right:5px;}
+.portfolioact-template-clear {clear:both;}
+.portfolio-template-items-list {border-right: 1px solid #000000; float:left;}
+.portfolioact-template-items-form {margin-right:10px;margin-top:45px;clear:both;}
+.portfolioact-template-pagination-page:link {color: #1F536B; }
+.portfolioact-template-pagination-page:visited {color: #1F536B; }
+.portfolioact-template-pagination-page:hover {color: #1F536B; }
+.portfolioact-template-pagination-page-previous { background-position: left center; background-repeat: no-repeat; padding-left: 20px; padding-right: 30px; background-image: url([[pix:portfolioactmode_template|arrow_previous]])}
+.portfolioact-template-pagination-page-next { background-position: right center; background-repeat: no-repeat;  padding-left: 30px; padding-right: 20px; background-image: url([[pix:portfolioactmode_template|arrow_next]])}
+
+
+
+.portfolioact-template-instruction {border: 1px solid #000000;margin-bottom: 5px;padding: 5px 5px 10px 5px;}
+
+
+/* template mode view.php */
+#mform1.portfolioact-template-templateform {background-color: #FFFFFF;}
+.portfolioact-template-templateform .pat_item_text,
+.portfolioact-template-templateform .pat_item_checkbox,
+.portfolioact-template-templateform .pat_item_duration,
+.portfolioact-template-templateform .pat_item_datepicker,
+.portfolioact-template-templateform .pat_item_numeric {
+background-color:#f2f2f2;
+-moz-border-radius:5px;
+-webkit-border-radius:5px;
+border-radius:5px;
+max-width:60em;
+padding: 10px;
+}
+.portfolioact-template-templateform #saveitems {border-bottom: 1px solid #000000; }
+.portfolioact-template-templateform div.fitem div.felement {margin-left: 0px; }
+.portfolioact-template-templateform div.fitem > div.fitemtitle {width: auto; }
+.portfolioact-template-template-instruction {margin-bottom: 1em; }
+.portfolioact-template-template-question { }
+.portfolioact-template-templateform div.fitem div.fcheckbox {margin-bottom: 1em;}
+.portfolioact-template-templateform .fcheckbox input.portfolioact-template-template-checkbox {margin-left: 10px; }
+.portfolioact-template-templateform .fitem .fitemtitle span.helplink {margin-right: 0px;}
+.mform .fcheckbox input.portfolioactmode_template_checkbox {margin-left: 5px;}
+.portfolioact-template-templateform .mceEditor a.mce_moodlemedia {display: none;};
+/* template designer.php */
+.portfolioact-template-template-feedbackmessage {margin-bottom: 10px;}
+.portfolioact-template-nameform fieldset div .fitemtitle {text-align:left;}
+.portfolioact-template-posform {display:none}
+.portfolioact_designertable .action-icon {margin-right: .5em}
+
+/* pages pageeditor.php */
+.portfolioact-page-nameform fieldset div .fitemtitle {text-align:left;}
+
+
+/* fixing TinyMCE */
+/* .mceEditor a.mce_image {display: none;} */
+/* .mceEditor a.mce_moodlemedia {display: none;}*/
+.portfolioact-template-items-settings-form .mceEditor a.mce_table, .portfolioact-template-templateform .mceEditor a.mce_table {display: none;}
+
+/* deleting a template  item or page delete.php  itemdelete.php pagedelete.php */
+.portfolioact-template-okbutton {float:left;}
+.portfolioact-template-cancelbutton {float:left;margin-left:5px;}
+
+
+/* no js message on designer.php and pageeditor.php */
+
+body.jsenabled p.portfolioactmode_template_javascript_disabled {display:none;}
+
+/* itemsettings.php */
+
+.portfolioactmode_template_instructionmessage {margin-top: 10px; height: 35px; font-size: 80%; padding-left: 35px; background-repeat: no-repeat; background-image: url([[pix:portfolioactmode_template|help-32]]) }

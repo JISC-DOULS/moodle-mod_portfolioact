@@ -1,0 +1,10 @@
+.portfolioactsave_google_error {color: #ff0000}
+.portfolioactsave_google_spinner {margin-bottom:5px;}
+.portfolioactsave_google_message_success {display: none;}
+.portfolioactsave_google_message_error {display: none;}
+
+body.jsenabled p.portfolioactsave_google_javascript_disabled {display:none;}
+p.portfolioactsave_google_patient_message {display: none;}
+p.portfolioactsave_google_patient_message_show {display: block;}
+img.portfolioactsave_google_spinner_hide {display:none;}
+img.portfolioactsave_google_spinner_show {display:block;}
