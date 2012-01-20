@@ -113,7 +113,7 @@ $draftitemid = file_get_submitted_draft_itemid('scaffoldset');
 
 //takes all the actual files for this scaffold and creates drafts (they may have been cleaned up by the system)
 file_prepare_draft_area($draftitemid, $context->id, 'mod_portfolioactmode_scaffold', 'scaffoldset',
-    $scaffold->id);
+    $scaffold->id, array('subdirs' => true));
 
 $currentset = new stdClass();
 $currentset->id = null;
