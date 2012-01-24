@@ -26,4 +26,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 //$module->version  = 0;           // If version == 0 then module will not be installed
-$plugin->version  = 2011071801;   // The current module version (Date: YYYYMMDDXX)
+$plugin->version  = 2011071802;   // The current module version (Date: YYYYMMDDXX)

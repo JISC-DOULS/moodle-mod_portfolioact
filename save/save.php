@@ -95,7 +95,15 @@ if ($savetype == 'google') {
 
         if (empty($savedgoogletoken)) {
             $uri = portfolioactsave_google_authsub::login_url($return, $realm, $cm->id);
-            echo $subplug->renderer->render_googlesignin($uri);
+            //Check if need to send message about domain
+            $domainmsg = false;
+            $domain = get_config('portfolioactsave_google', 'google_domain');
+            $context = get_context_instance(CONTEXT_MODULE, $subplug->cmid);
+            if ($domain != '' &&
+                !has_capability('portfolioactsave/google:anydomain', $context)) {
+                $domainmsg = $domain;
+            }
+            echo $subplug->renderer->render_googlesignin($uri, $domainmsg);
             echo $subplug->renderer->footer();
             exit;
 
@@ -108,7 +116,14 @@ if ($savetype == 'google') {
             } catch (Exception $e) {
                 portfolioactsave_google_docs::delete_sesskey($USER->id, $cm->id);
                 $uri = $google_authsub::login_url($return, $realm );
-                echo $subplug->renderer->render_googlesignin($uri);
+                $domainmsg = false;
+                $domain = get_config('portfolioactsave_google', 'google_domain');
+                $context = get_context_instance(CONTEXT_MODULE, $subplug->cmid);
+                if ($domain != '' &&
+                    !has_capability('portfolioactsave/google:anydomain', $context)) {
+                    $domainmsg = $domain;
+                }
+                echo $subplug->renderer->render_googlesignin($uri, $domainmsg);
                 echo $subplug->renderer->footer();
                 exit;
             }
@@ -176,6 +191,11 @@ if ($savetype == 'google') {
     //so we can turn off the spinner and
     //provide a better continue link
 
+    //Get a link to google for success messages
+    $successmsg = get_string('exportgooglesucces', 'portfolioactsave_google');
+    $successmsg = html_writer::empty_tag('br');
+    $successmsg = html_writer::tag('a', get_string('linktogoogle', 'portfolioactsave_google'),
+        array('href' => $subplug->get_google_link()));
 
     if (! $ajaxenabled) {
         try {
@@ -192,7 +212,7 @@ if ($savetype == 'google') {
             if ($subplug->error_files > 0) {
                 $message = get_string('exportgooglesuccesssome_errors', 'portfolioactsave_google');
             } else {
-                $message = get_string('exportgooglesucces', 'portfolioactsave_google');
+                $message = $successmsg;
             }
 
 
@@ -211,7 +231,7 @@ if ($savetype == 'google') {
     }
 
     if ($ajaxenabled) {
-        echo $subplug->renderer->render_message_area_success();
+        echo $subplug->renderer->render_message_area_success($successmsg);
         echo $subplug->renderer->render_message_area_error();
         $PAGE->requires->js_init_call('M.portfolioactsave_google.init',
         array($actid, $modetype, $cmid, 'google'), true, portfolioactsave_google_get_js_module());

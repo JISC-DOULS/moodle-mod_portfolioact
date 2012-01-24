@@ -340,6 +340,22 @@ class portfolioact_google_save extends portfolioact_save_plugin {
         return true;
     }
 
+    /**
+     * Returns a link to google docs
+     * @return string
+     */
+    public function get_google_link() {
+        $link = 'http://docs.google.com';
+        //If domain config is set direct specifically to that
+        $context = get_context_instance(CONTEXT_MODULE, $this->cmid);
+        $domain = get_config('portfolioactsave_google', 'google_domain');
+        if ($domain != '' &&
+            !has_capability('portfolioactsave/google:anydomain', $context)) {
+            $link .= '/a/' . $domain;
+        }
+        return $link;
+    }
+
 }
 
 

@@ -44,6 +44,13 @@ M.portfolioactsave_google.init = function(Y, actid, mode, cmid, savetype) {
                             Y.one('.portfolioactsave_google_message_success')
                                     .append(result.optional_message);
                         }
+                        Y.one('.portfolioactsave_google_message_success a').on(
+                                'click', function(e) {
+                                    e.preventDefault();
+                                    var target = e.target;
+                                    window.open(target.get("href"), "_blank");
+                                    return false;
+                                });
 
                     } else {
                         Y.one('.portfolioactsave_google_spinner').setStyle(

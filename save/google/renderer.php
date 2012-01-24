@@ -60,12 +60,17 @@ class mod_portfolioact_googlesave_renderer extends plugin_renderer_base {
      * @return string
      */
 
-    public function render_googlesignin($url) {
-         $str = $this->output->heading(get_string('googlesigninheader',
-             'portfolioactsave_google'), 3);
-         $str.= html_writer::tag('a', get_string('googlesignin',
+    public function render_googlesignin($url, $domain = false) {
+        $str = $this->output->heading(get_string('googlesigninheader',
+        'portfolioactsave_google'), 3);
+        //Message for google apps domain logins
+        if ($domain) {
+            $str .= html_writer::tag('p',
+            get_string('googlesignindomain', 'portfolioactsave_google', $domain));
+        }
+        $str.= html_writer::tag('a', get_string('googlesignin',
             'portfolioactsave_google'), array('href'=>$url) );
-         return $str;
+        return $str;
 
     }
 
@@ -164,8 +169,8 @@ class mod_portfolioact_googlesave_renderer extends plugin_renderer_base {
      * @return string
      */
 
-    public function render_message_area_success() {
-        return html_writer::tag('p', '', array('class'=>'portfolioactsave_google_message_success'));
+    public function render_message_area_success($text = '') {
+        return html_writer::tag('p', $text, array('class'=>'portfolioactsave_google_message_success'));
     }
 
     /**

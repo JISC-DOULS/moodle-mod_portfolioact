@@ -38,12 +38,14 @@ $string['google:anydomain'] = 'When restricting portfolioact export to a Google 
 
 $string['proceed'] = 'Proceed';
 $string['title'] = 'Export to Google';
-$string['googlesigninheader'] = "You will need to sign into to your Google Account to export the activity.";
-$string['googlesignin'] = 'log in to your account';
+$string['googlesigninheader'] = "You will need to sign into your Google Account to export the activity.";
+$string['googlesignindomain'] = 'You must have signed up for a Google Apps account on the {$a} domain.';
+$string['googlesignin'] = 'Export activity into your account';
 $string['postedok'] = 'File posted successfully.';
 $string['postednotok'] = 'File post was not successful.';
 $string['noscaffongoogledocs'] = 'Could not create the {$a} on Google docs';
 $string['exportgooglesuccess'] = 'The activity was successfully exported to your Google Docs Account.';
+$string['linktogoogle'] = 'Access Google Documents';
 $string['exportgoogleerror'] = 'Sorry.  An error occurred while exporting the activity to the Google service. ';
 
 $string['loadinggoogle'] = 'Contacting Google...';

@@ -91,7 +91,7 @@ if ($result === true) {
         $msg->optional_message =
             get_string('exportgooglesuccesssome_errors', 'portfolioactsave_google');
     } else {
-        $msg->optional_message = get_string('exportgooglesuccess', 'portfolioactsave_google');
+        $msg->optional_message = '';
     }
     echo json_encode($msg, JSON_FORCE_OBJECT );
     exit;
