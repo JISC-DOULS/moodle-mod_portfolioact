@@ -28,8 +28,8 @@ M.portfolioactmode_template.init = function(Y) {
     //load the pages for the current template
     M.portfolioactmode_template.refresh_pages = function(event) {
 
-        var newtemplateid  = M.portfolioactmode_template.Y.get('#id_template').get('value');
-        var cmid = M.portfolioactmode_template.Y.get('#cmid').get('value');
+        var newtemplateid  = M.portfolioactmode_template.Y.one('#id_template').get('value');
+        var cmid = M.portfolioactmode_template.Y.one('#cmid').get('value');
         var url = M.cfg.wwwroot+'/mod/portfolioact/mode/template/edittemplate.php?id='+cmid+'&newtemplateid='+newtemplateid;
         document.location.href = url;
 
