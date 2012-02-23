@@ -34,6 +34,10 @@ border-radius:5px;
 max-width:60em;
 padding: 10px;
 }
+.portfolioact-template-templateform .pat_item_text .ftextarea textarea {
+	width: 99.5%;
+	height: 125px;
+}
 .portfolioact-template-templateform #saveitems {border-bottom: 1px solid #000000; }
 .portfolioact-template-templateform div.fitem div.felement {margin-left: 0px; }
 .portfolioact-template-templateform div.fitem > div.fitemtitle {width: auto; }
