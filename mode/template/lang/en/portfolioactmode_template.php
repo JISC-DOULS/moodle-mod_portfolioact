@@ -161,7 +161,8 @@ $string['iteminstruction'] = 'Instruction Item';
 $string['pagename'] = 'Page Name';
 $string['updatepagename'] ='Update Page name';
 $string['chooseanitem'] = 'Choose one of the items in the templates';
-
+$string['newitemstart'] = 'At the beginning';
+$string['newitemend'] = 'At the end';
 
 //Item delete itemdelete.php
 $string['confirmitemdelete'] = 'Are you sure you want to delete Item \'{$a}\'?';

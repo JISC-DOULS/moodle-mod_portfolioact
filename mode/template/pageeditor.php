@@ -110,8 +110,8 @@ $controlform->formhandle->addRule('contenttype', null, 'required', null, 'client
 $controlform->formhandle->addHelpButton('contenttype', 'editcontenttypes',
     'portfolioactmode_template');
 
-
-$itemnames = array('start'=>'At the beginning');
+$itemnames = array('end' => get_string('newitemend', 'portfolioactmode_template'));
+$itemnames['start'] = get_string('newitemstart', 'portfolioactmode_template');
 foreach ($items as $item) {
     $itemnames[$item->id]    = $item->name;
 }

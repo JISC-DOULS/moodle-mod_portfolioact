@@ -271,7 +271,7 @@ if ($fromform=$settingsform->get_data()) {
 
     if ($new == 1) {
 
-        if ($itemafter !== 'start') {
+        if ($itemafter !== 'start' && $itemafter !== 'end') {
             $itemafter = (int)$itemafter;    //make it safe we allowed non int params
         }
 

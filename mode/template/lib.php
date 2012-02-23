@@ -1325,10 +1325,14 @@ abstract class  portfolioact_template_item {
 
             if (! is_null($itemafter)) {
                 //code to insert it in correct position
-
                 if ($itemafter == 'start') {//specialcase
                     $currentidx = explode(",", $itemorder);
                     array_unshift($currentidx, $itemid);
+                    $page->itemorder = implode(",", $currentidx);
+
+                } else if ($itemafter == 'end') {
+                    $currentidx = explode(",", $itemorder);
+                    array_push($currentidx, $itemid);
                     $page->itemorder = implode(",", $currentidx);
 
                 } else {
@@ -2599,6 +2603,10 @@ class  portfolioact_template_item_reference extends portfolioact_template_item {
 
                     $currentidx = explode(",", $itemorder);
                     array_unshift($currentidx, $itemid);
+                    $page->itemorder = implode(",", $currentidx);
+                } else if ($itemafter == 'end') {
+                    $currentidx = explode(",", $itemorder);
+                    array_push($currentidx, $itemid);
                     $page->itemorder = implode(",", $currentidx);
 
                 } else {
