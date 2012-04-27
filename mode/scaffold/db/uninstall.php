@@ -24,7 +24,7 @@ function xmldb_portfolioactmode_scaffold_uninstall() {
     global $DB;
 
     $fs = get_file_storage();
-    $file_records = $DB->get_records('files', array('component'=>'mod_portfolioactmode_scaffold',
+    $file_records = $DB->get_records('files', array('component'=>'portfolioactmode_scaffold',
         'filearea'=>'scaffoldset'));
     foreach ($file_records as $file_record) {
         $file = $fs->get_file_instance($file_record);

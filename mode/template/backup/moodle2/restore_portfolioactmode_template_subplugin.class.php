@@ -503,7 +503,7 @@ class restore_portfolioactmode_template_subplugin extends restore_subplugin {
         //fix up the files
         if (! is_null($this->oldscaffoldid)) {
             $orig_course_context = $this->task->get_info()->original_course_contextid;
-            $this->add_related_files('mod_portfolioactmode_scaffold', 'scaffoldset',
+            $this->add_related_files('portfolioactmode_scaffold', 'scaffoldset',
                 'portfolioact_scaffold',  $orig_course_context, $this->oldscaffoldid );
         }
         //fix up the page order in the template

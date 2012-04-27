@@ -177,7 +177,7 @@ class portfolioact_mode_scaffold extends portfolioact_mode_plugin {
 
          //TODO maybe make the component here and in /scaffold/designer a constant
         $fileinfo = array(
-            'component' => 'mod_portfolioactmode_scaffold',
+            'component' => 'portfolioactmode_scaffold',
             'filearea' => 'scaffoldset',
             'itemid' => $scaffold->id,
             'contextid' => $context->id);
@@ -366,7 +366,7 @@ class portfolioact_scaffold  {
 
          //TODO maybe make the component here and in /scaffold/designer a constant
         $fileinfo = array(
-            'component' => 'mod_portfolioactmode_scaffold',
+            'component' => 'portfolioactmode_scaffold',
             'filearea' => 'scaffoldset',
             'itemid' => $this->id,
             'contextid' => $context->id);

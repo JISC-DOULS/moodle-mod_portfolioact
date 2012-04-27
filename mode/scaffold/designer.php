@@ -112,7 +112,7 @@ $form->formhandle->addElement('filemanager', 'scaffoldset',
 $draftitemid = file_get_submitted_draft_itemid('scaffoldset');
 
 //takes all the actual files for this scaffold and creates drafts (they may have been cleaned up by the system)
-file_prepare_draft_area($draftitemid, $context->id, 'mod_portfolioactmode_scaffold', 'scaffoldset',
+file_prepare_draft_area($draftitemid, $context->id, 'portfolioactmode_scaffold', 'scaffoldset',
     $scaffold->id, array('subdirs' => true));
 
 $currentset = new stdClass();
@@ -132,7 +132,7 @@ if ($form->is_cancelled()) {
 
     //copy alll the drafts to create real rows
     file_save_draft_area_files($draftitemid, $context->id,
-     'mod_portfolioactmode_scaffold', 'scaffoldset', $scaffold->id,
+     'portfolioactmode_scaffold', 'scaffoldset', $scaffold->id,
       array('subdirs' => true, 'maxbytes' => MAXBYTES));
 
     $scaffold->update();

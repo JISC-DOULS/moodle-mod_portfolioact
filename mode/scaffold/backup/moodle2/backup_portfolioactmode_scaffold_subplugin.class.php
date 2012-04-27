@@ -57,7 +57,7 @@ class backup_portfolioactmode_scaffold_subplugin extends backup_subplugin {
 
         $context = get_context_instance(CONTEXT_COURSE, $this->task->get_courseid());
 
-        $subplugin_table_scaffolds->annotate_files('mod_portfolioactmode_scaffold', 'scaffoldset', 'id', $context->id);
+        $subplugin_table_scaffolds->annotate_files('portfolioactmode_scaffold', 'scaffoldset', 'id', $context->id);
 
         //the return value is not checked
         //return $subplugin;

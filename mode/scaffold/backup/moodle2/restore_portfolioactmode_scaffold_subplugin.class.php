@@ -120,7 +120,7 @@ class restore_portfolioactmode_scaffold_subplugin extends restore_subplugin {
 
         if (! is_null($this->old_scaffoldid)) {
             $orig_course_context = $this->task->get_info()->original_course_contextid;
-            $this->add_related_files('mod_portfolioactmode_scaffold', 'scaffoldset',
+            $this->add_related_files('portfolioactmode_scaffold', 'scaffoldset',
                 'portfolioact_scaffold' ,  $orig_course_context, $this->old_scaffoldid );
 
         }
