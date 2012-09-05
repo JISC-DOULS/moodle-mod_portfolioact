@@ -63,6 +63,7 @@ $string['javascript_disabled'] = 'This functionality requires that you have Java
 
 
 //caps
+$string['portfolioact:addinstance'] = 'Add a new portfolio activity';
 $string['portfolioact:canedit'] = 'Edit Portfolioact Activities';
 $string['portfolioact:canview'] = 'View Portfolioact Activities';
 

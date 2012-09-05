@@ -103,6 +103,8 @@ function portfolioactmode_template_view($subplug) {
     $class = $form->formhandle->_attributes['class'];
     $form->formhandle->_attributes['class'] = $class . ' portfolioact-template-templateform';
 
+    $showsave = false;
+
     foreach ($items as &$item) {
 
         $class = "portfolioact_template_item_".$item->type;
@@ -116,11 +118,29 @@ function portfolioactmode_template_view($subplug) {
             $item->object->display($form->formhandle);//course wide
         }
 
+        $item->typecheck = $item->type;
+        if ($item->type == 'reference') {
+            // Special check for reference type to find original type.
+            $sourceid = $item->object->settingskeys['sourceitem'];
+            $sourceitem = portfolioact_template_item::getitem($sourceid);
+            if (!empty($sourceitem)) {
+                $item->typecheck = $sourceitem->type;
+            } else {
+                $item->typecheck = null;
+            }
+        }
+        // Work out if save button is needed on page.
+        if (!in_array($item->typecheck, portfolioact_template_item::$readonly)) {
+            $showsave = true;
+        }
+
     }
-    $form->formhandle->addElement('header', 'saveitems', '');
-    //add the save button
-    $form->formhandle->addElement('submit', 'submitbutton', get_string('saveitems',
-        'portfolioactmode_template'));
+    if ($showsave) {
+        $form->formhandle->addElement('header', 'saveitems', '');
+        //add the save button
+        $form->formhandle->addElement('submit', 'submitbutton', get_string('saveitems',
+            'portfolioactmode_template'));
+    }
 
     if ($form->is_cancelled()) {
         exit;

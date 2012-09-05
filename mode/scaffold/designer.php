@@ -53,8 +53,8 @@ $context = get_context_instance(CONTEXT_COURSE, $scaffold->course);
 
 require_capability('portfolioactmode/scaffold:editscaffolds', $context );
 
-$url = new moodle_url('/mod/portfolioact/mode/scaffold/delete.php',
-    array('id'=>$scaffold_plugin->cm->id, 'scaffold'=>$scaffoldid));
+$url = new moodle_url('/mod/portfolioact/mode/scaffold/designer.php',
+    array('id'=>$scaffold_plugin->cm->id, 'scaffoldid'=>$scaffoldid));
 $PAGE->set_url($url);
 $navurl = new moodle_url('/mod/portfolioact/mode/scaffold/manager.php',
     array('id'=>$scaffold_plugin->cm->id, 'action'=>'list'));

@@ -59,7 +59,7 @@ $mform = new  portfolioact_template_create_form(qualified_me());
 if ($mform->is_cancelled()) {
 
     $url = new moodle_url('/mod/portfolioact/mode/template/manager.php',
-        array('id'=>$portfolioact->cm->id, 'action'=>'list'));
+        array('id'=>$portfolioacttemplate->cm->id, 'action'=>'list'));
 
     redirect($url);
 

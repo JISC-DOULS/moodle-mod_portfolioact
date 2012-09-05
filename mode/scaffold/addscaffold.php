@@ -41,7 +41,7 @@ $scaffold_plugin = new portfolioact_mode_scaffold();
 $context = get_context_instance(CONTEXT_MODULE, $scaffold_plugin->cm->id);
 require_capability('portfolioactmode/scaffold:editscaffolds', $context );
 
-$url = new moodle_url('/mod/portfolioact/mode/template/addscaffold.php',
+$url = new moodle_url('/mod/portfolioact/mode/scaffold/addscaffold.php',
     array('id'=>$scaffold_plugin->cm->id));
 $PAGE->set_url($url);
 $navurl = new moodle_url('/mod/portfolioact/mode/scaffold/manager.php',

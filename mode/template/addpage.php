@@ -36,7 +36,7 @@ global $PAGE;
 global $DB;
 global $CFG;
 
-$templateid = required_param('templateid', 0, PARAM_INT);
+$templateid = required_param('templateid', PARAM_INT);
 
 $portfolioacttemplate = new portfolioact_mode_template();
 $template = new portfolioact_template($templateid);

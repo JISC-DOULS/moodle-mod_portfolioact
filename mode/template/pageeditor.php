@@ -50,7 +50,7 @@ $context = get_context_instance(CONTEXT_MODULE, $portfolioacttemplate->cm->id);
 require_capability('portfolioactmode/template:edittemplates', $context );
 
 $url = new moodle_url('/mod/portfolioact/mode/template/pageeditor.php',
-    array('id'=>$portfolioacttemplate->cm->id, 'pageid'=>$pageid, 'template'=>$templateid));
+    array('id'=>$portfolioacttemplate->cm->id, 'pageid'=>$pageid, 'templateid'=>$templateid));
 $PAGE->set_url($url);
 $navurl = new moodle_url('/mod/portfolioact/mode/template/manager.php',
     array('id'=>$portfolioacttemplate->cm->id, 'action'=>'list'));

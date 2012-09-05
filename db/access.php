@@ -50,6 +50,19 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
 
+    // Ability to add new portfolio activity to a course
+    'mod/portfolioact:addinstance' => array(
+        'riskbitmask' => RISK_XSS,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+        'clonepermissionsfrom' => 'moodle/course:manageactivities'
+    ),
+
     'mod/portfolioact:canview' => array(
     //allow use of module
             'captype' => 'read',

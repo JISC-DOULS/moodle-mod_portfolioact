@@ -114,7 +114,9 @@ abstract class portfolioact_mode_plugin extends portfolioact {
 
     public $renderer;
 
-    /**
+    /*
+     * All subclasses need to implement a method like this:
+     *
      * Return the table name for the mode
      *
      * Return the table name for the mode. This is necessary because
@@ -125,8 +127,7 @@ abstract class portfolioact_mode_plugin extends portfolioact {
      * @return string
      *
      */
-
-    public abstract static function table_name();
+    // public static function table_name();
 
     public function __construct($name) {
 
@@ -142,6 +143,8 @@ abstract class portfolioact_mode_plugin extends portfolioact {
 
 
     /*
+     * All subclasses need to implement a method like this:
+     *
      * Return an instance of the mode actual class from the activity id
      *
      * Usage: when the activity id is known but we may not be on that page
@@ -149,10 +152,11 @@ abstract class portfolioact_mode_plugin extends portfolioact {
      * @param int $actid
      * @return mixed
      */
-
-    public abstract static function get_mode_operational_instance($actid);
+    // public static function get_mode_operational_instance($actid);
 
     /*
+     * All subclasses need to implement a method like this:
+     *
      * Return the data of the mode together with the metadata (course name etc)
      *
      * Usage: when the activity id is known but we may not be on that page
@@ -162,15 +166,13 @@ abstract class portfolioact_mode_plugin extends portfolioact {
      * @return mixed exportdata
      *
      */
-
-    public abstract static function get_data_for_export($actid);
+    // public static function get_data_for_export($actid);
 
     /**
      * Produces a menu item for the side navigation for edit settings
      *
      * @param mixed $node
      */
-
     public abstract function nav_menu_item(&$node);
 
     /**
@@ -180,8 +182,5 @@ abstract class portfolioact_mode_plugin extends portfolioact {
      * @param int $courseid
      * @return boolean
      */
-
     public abstract function add_new($name, $courseid);
-
-
 }

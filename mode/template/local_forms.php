@@ -108,7 +108,7 @@ class portfolioact_template_edit_form extends moodleform {
 
 class portfolioact_template_edit_confirm_form extends moodleform {
 
-    protected $saved;
+    public $saved;
 
     /**
      * Display the form
@@ -118,8 +118,7 @@ class portfolioact_template_edit_confirm_form extends moodleform {
      * @param string $data
      */
 
-    public function display($data) {
-         $this->saved = $data;
+    public function display() {
          parent::display();
     }
 

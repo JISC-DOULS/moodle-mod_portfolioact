@@ -252,6 +252,8 @@ class portfolioact_file_save extends portfolioact_save_plugin {
         );
 
         try {
+            // Fix Special Chars by adding utf-8 meta tag to content.
+            $this->exportdata = '<meta http-equiv="content-type" content="text/html; charset=utf-8">' . $this->exportdata;
             $this->rtf = html2rtf::convert($this->exportdata, $rtfopts);
         } catch (Exception $e ) {
             throw $e;

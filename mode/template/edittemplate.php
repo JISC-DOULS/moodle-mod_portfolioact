@@ -406,7 +406,8 @@ if ($mform->is_cancelled()) {
         echo $portfolioacttemplate->renderer->render_portfolioactmode_template_list();
         echo $portfolioacttemplate->renderer->render_portfolioactmode_template_formmessage
             ($message, '');
-        $mform2->display($saveddata);
+        $mform2->saved = $saveddata;
+        $mform2->display();
         echo $portfolioacttemplate->renderer->footer();
         exit;
 

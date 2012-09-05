@@ -246,10 +246,12 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
 
             if ($settings->datamode == 0) {//data is linked to the activity not the course
                 $sql2params[] = $actid;
+                $extrawhere = ' AND actid = ?';
             } else {
-                $sql2params[] = 'null'; //check this bug fix. TODO
+                //$sql2params[] = 'null';
+                $extrawhere = ' AND actid IS NULL';
             }
-            $extrawhere = ' AND actid = ?';
+
 
             /*$itemsstring = implode(",", $itemswithentries);
             $sql2 = <<<EOD
@@ -265,7 +267,6 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
             $sql2params = array_merge($in_params, $sql2params);
             $itemswithdata = $DB->get_records_select('portfolioact_tmpl_entries',
                 $where, $sql2params, '', 'id, itemid, entry');
-
         }
 
         $hasheditemswithdata = array();
@@ -288,10 +289,11 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
 
             if ($settings->datamode == 0) {//data is linked to the activity not the course
                 $sql3params[] = $actid;
+                $extrawhere = ' AND actid = ?';
             } else {
-                $sql3params[] = 'null'; //check this bug fix. TODO
+                //$sql3params[] = 'null';
+                $extrawhere = ' AND actid IS NULL';
             }
-            $extrawhere = ' AND actid = ?';
 
             /*$itemsstring = implode(",", array_values($referenceitems));
             $sql3 = <<<EOD
@@ -1138,6 +1140,7 @@ abstract class  portfolioact_template_item {
     static public $items = array('instruction'=>'Instruction', 'text'=>'Text Entry',
         'checkbox'=>'Checkbox', 'reference'=>'Reference', 'datepicker'=>'Date selector',
         'numeric'=>'Numeric', 'duration' => 'Duration');
+    static public $readonly = array('instruction', null);// Types that don't save, always inc null.
     protected $id;
     protected $name;
     protected $pageid;
@@ -1202,7 +1205,7 @@ abstract class  portfolioact_template_item {
      *
      */
 
-    abstract public static function savewithexport($settings);
+    public static function savewithexport($settings) {}
 
 
 
@@ -1246,7 +1249,7 @@ abstract class  portfolioact_template_item {
      * @return array of arrays with control, default value, label,
      * helptextstring identifier, helpstringfile identifier to define settings
      */
-    abstract protected static function getsettingtypes($filter = null);
+    protected static function getsettingtypes($filter = null) {}
 
 
 
@@ -1708,7 +1711,8 @@ portfolioact_template_item {
 
         global $COURSE, $USER, $DB;
 
-        $patterns = array('/{date}/', '/{courseshortname}/', '/{activityname}/', '/{username}/');
+        $patterns = array('/{date}/', '/{courseshortname}/', '/{activityname}/', '/{username}/',
+            '/{pi}/');
         $date = userdate(time(), get_string('strftimedate', 'langconfig') );
         $courseshortname = $COURSE->shortname;
         $activityname = '';
@@ -1723,7 +1727,7 @@ portfolioact_template_item {
 
         $username = fullname($USER);
 
-        $substitutions = array($date, $courseshortname, $activityname, $username);
+        $substitutions = array($date, $courseshortname, $activityname, $username, $USER->idnumber);
         $newtext = preg_replace($patterns, $substitutions, $text);
 
         return $newtext;
@@ -2656,7 +2660,7 @@ class  portfolioact_template_item_reference extends portfolioact_template_item {
      * @return boolean
      */
 
-    public function update_element($name, $settings) {
+    public function update_element($name, $settings = array()) {
 
         $item = new stdClass;
         $item->id = $this->id;

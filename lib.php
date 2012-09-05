@@ -185,13 +185,7 @@ function portfolioact_scale_used($portfolioactid, $scaleid) {
  * @return boolean True if the scale is used by any portfolioact
  */
 function portfolioact_scale_used_anywhere($scaleid) {
-    global $DB;
-
-    if ($scaleid and $DB->record_exists('portfolioact', 'grade', -$scaleid)) {
-        return true;
-    } else {
-        return false;
-    }
+    return false;
 }
 
 /**

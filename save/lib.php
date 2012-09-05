@@ -190,11 +190,12 @@ abstract class portfolioact_save_plugin {
     public $errormessage;
 
     /**
+     * All subclasses need to implement a method like this:
+     *
      * A singleton contsructor
      * @param int $actid
      */
-
-    abstract public static function get_instance($actid, $cmid);
+    // public static function get_instance($actid, $cmid);
 
     /**
      * Each save plugin must provide an export method.
