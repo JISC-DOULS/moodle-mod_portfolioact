@@ -55,6 +55,8 @@ $string['unknownerror'] = 'We do not have any more information about this error.
 $string['connectionlost'] = 'We cannot connect you to Google. Please try and login again.';
 $string['exportgooglesuccesssome_errors'] = ' *The activity was sent to Google but not all the files were successfully transferred.';
 $string['exportgooglesucces'] = 'The activity has been successfully exported to Google';
-$string['exportfailed'] = 'Export failed';
+$string['exportfailed'] = 'Export failed.';
+$string['retryneeded'] = 'Please try exporting the activity again.';
 $string['connectionerror'] = 'An error occurred connecting to Google';
 $string['unknownerror'] ='Unknown error';
+$string['javascript_disabled'] = 'This functionality expects that you have Javascript enabled in your browser. <a href="{$a}&nojs=1">Select this link to manually export.</a>';

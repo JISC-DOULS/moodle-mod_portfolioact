@@ -93,7 +93,7 @@ $form->formhandle->addHelpButton('settings', 'emptydirectoriesmessage',
 
 $form->formhandle->addElement('filemanager', 'scaffoldset',
     get_string('uploadafile'), null,  array('subdirs' => true,
-        'maxbytes' => MAXBYTES, 'accepted_types' => array('*') ));//maxfiles should be unlimited
+        'maxbytes' => 2097152, 'accepted_types' => array('*') ));//maxfiles should be unlimited
 
 
 
@@ -133,7 +133,7 @@ if ($form->is_cancelled()) {
     //copy alll the drafts to create real rows
     file_save_draft_area_files($draftitemid, $context->id,
      'portfolioactmode_scaffold', 'scaffoldset', $scaffold->id,
-      array('subdirs' => true, 'maxbytes' => MAXBYTES));
+      array('subdirs' => true, 'maxbytes' => 2097152));
 
     $scaffold->update();
 

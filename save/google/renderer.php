@@ -68,8 +68,8 @@ class mod_portfolioact_googlesave_renderer extends plugin_renderer_base {
             $str .= html_writer::tag('p',
             get_string('googlesignindomain', 'portfolioactsave_google', $domain));
         }
-        $str.= html_writer::tag('a', get_string('googlesignin',
-            'portfolioactsave_google'), array('href'=>$url) );
+        $str.= '<a href="' . $url . '">' . get_string('googlesignin',
+            'portfolioactsave_google') . '</a>';
         return $str;
 
     }
@@ -216,8 +216,8 @@ class mod_portfolioact_googlesave_renderer extends plugin_renderer_base {
      * @return string
      */
 
-    public function render_javascript_disabled_message() {
-        return html_writer::tag('p', get_string('javascript_disabled', 'portfolioact'),
+    public function render_javascript_disabled_message($url) {
+        return html_writer::tag('p', get_string('javascript_disabled', 'portfolioactsave_google', $url),
             array('class'=>'portfolioactsave_google_javascript_disabled'));
 
     }

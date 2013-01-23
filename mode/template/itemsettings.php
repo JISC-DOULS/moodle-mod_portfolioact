@@ -146,7 +146,6 @@ if (! is_null($new)) {
 //this bit sets up the form - covers both cases of new and edited items
 //you need to extend this if you add new item types which require new controls
 
-
 foreach ($settings as $setting => $controldetails) {
 
     if (isset($settingsdata[$setting])) {
@@ -155,12 +154,30 @@ foreach ($settings as $setting => $controldetails) {
 
     switch ($controldetails['control']) {
         case "editor":
-            $editor = $settingsform->formhandle->addElement('editor', $setting,
-            $controldetails['label'], null, null);
-            $editor->setValue(array('text'=>$controldetails['defaultvalue']));
-            $settingsform->formhandle->addHelpButton($setting, $controldetails['helptextstring'],
+            $uploadopts = null;
+            $data = null;
+            if ($setting == 'questiontext') {
+                $data = new stdClass();
+                $settingformat = $setting . 'format';
+                $data->$settingformat = FORMAT_HTML;
+                $data->$setting = $controldetails['defaultvalue'];
+                $ccontext = context_course::instance($portfolioacttemplate->course->id);
+                $uploadopts = array('trusttext'=>true, 'subdirs'=>false, 'maxfiles'=>99,
+                        'maxbytes'=>$portfolioacttemplate->course->maxbytes, 'context'=>$ccontext);
+                $data = file_prepare_standard_editor($data, $setting,
+                        $uploadopts, $ccontext, 'portfolioactmode_template',
+                        'question', $itemid);
+            }
+            $editor = $settingsform->formhandle->addElement('editor', $setting . '_editor',
+                    $controldetails['label'], null, $uploadopts);
+            if (!isset($data)) {
+                $editor->setValue(array('text'=>$controldetails['defaultvalue']));
+            } else {
+                $settingsform->set_data($data);
+            }
+            $settingsform->formhandle->addHelpButton($setting . '_editor', $controldetails['helptextstring'],
                 'portfolioactmode_template');
-            $settingsform->formhandle->addRule($setting,
+            $settingsform->formhandle->addRule($setting . '_editor',
                 get_string('required'), 'required', null, 'client');
 
 
@@ -248,7 +265,6 @@ if ($fromform=$settingsform->get_data()) {
 
         $newname = $fromform->itemname;
         $settings = array();
-
     foreach ($fromform as $fieldname => $fieldvalue) {
             //lose the fields not custom for this control type
         if ( ($fieldname == 'itemname') || ($fieldname == 'submitbutton') ||
@@ -262,7 +278,11 @@ if ($fromform=$settingsform->get_data()) {
             //handle case of tinymce editor which reurns array with text and format (1=html)
         } else if (is_array($fieldvalue) && (array_key_exists('text', $fieldvalue) &&
             array_key_exists('format', $fieldvalue) )) {
-            $settings[$fieldname] = $fieldvalue['text'];
+            $settings[str_replace('_editor', '', $fieldname)] = $fieldvalue['text'];
+            if (!empty($fieldvalue['itemid'])) {
+                // Save attachment file item.
+                $settings['itemid'] = $fieldvalue['itemid'];
+            }
         } else if (is_array($fieldvalue)) {//support multiple selects
             $settings[$fieldname] = implode(",", $fieldvalue);
         }

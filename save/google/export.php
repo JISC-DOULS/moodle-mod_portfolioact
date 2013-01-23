@@ -46,11 +46,33 @@ if (! isloggedin()) {
 require_login($course, false, $cm);//Check user access to course+cm
 
 $subplug = portfolioact_save::get_export_module($savetype, $actid, $cmid);
-$savedgoogletoken = portfolioactsave_google_docs::get_sesskey($USER->id, $cmid);
 
 try {
-    $google_authsub = new portfolioactsave_google_authsub
-        ($savedgoogletoken, '', array('debug'=>0), $cm->id);
+    // Set return url to save.php?
+    $returnurl = new moodle_url('mod/portfolioact/save/save.php');
+    $returnurl->param('savetype', $savetype);
+    $returnurl->param('actid', $actid);
+    $returnurl->param('id', $cmid);
+
+    $clientid = '';
+    $secret = '';
+    if ($record = $DB->get_record('portfolio_instance', array('plugin' => 'googledocs', 'visible' => 1))) {
+        $id = $record->id;
+        if ($configs = $DB->get_records('portfolio_instance_config', array('instance' => $id))) {
+            foreach ($configs as $config) {
+                if ($config->name == 'clientid' && !empty($config->value)) {
+                    $clientid = $config->value;
+                }
+                if ($config->name == 'secret' && !empty($config->value)) {
+                    $secret = $config->value;
+                }
+            }
+        }
+    }
+
+    $google_authsub = new portfolioactsave_google_authsub($clientid, $secret, $returnurl,
+            portfolioactsave_google_docs::REALM);
+    $google_authsub->set_context(context_module::instance($cm->id));
 } catch (Exception $e) {
     $msg = new stdClass();
     $msg->status = 0;

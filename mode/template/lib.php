@@ -225,8 +225,8 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
 
         foreach ($items as $item) {
 
-            if ($item->type == 'instruction') {//instructions don't have user entries
-                continue;
+            if (in_array($item->type, portfolioact_template_item::$readonly)) {
+                continue;// No user entries.
             }
 
             if ($item->type == 'reference') {//we'll deal with separately
@@ -277,7 +277,7 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
                 //potentially we could have in Course mode as actid null is allowed
                 //multiple times in the unique index. that would be an error state in the data
                 //TODO cld test for that but what to do if we find it?
-                $hasheditemswithdata[$itemdata->itemid] = $itemdata->entry;
+                $hasheditemswithdata[$itemdata->itemid] = $itemdata;
             }
         }
 
@@ -312,7 +312,7 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
 
             if (! empty($refitemswithdata)) {
                 foreach ($refitemswithdata as $itemdata) {
-                    $hashedrefitemswithdata[$itemdata->itemid] = $itemdata->entry;
+                    $hashedrefitemswithdata[$itemdata->itemid] = $itemdata;
                 }
             }
         }
@@ -320,12 +320,15 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
         //patch up the data
         foreach ($items as $item) {
             if (isset($hasheditemswithdata[$item->id])) {
-                $item->entry = $hasheditemswithdata[$item->id];
+                $item->entry = $hasheditemswithdata[$item->id]->entry;
+                $item->entryid = $hasheditemswithdata[$item->id]->id;
             } else if ( (! is_null($item->reference) ) && (
             isset($hashedrefitemswithdata[$item->reference]))) {
-                $item->entry = $hashedrefitemswithdata[$item->reference];
+                $item->entry = $hashedrefitemswithdata[$item->reference]->entry;
+                $item->entryid = $hashedrefitemswithdata[$item->reference]->id;
             } else {
                 $item->entry = null;
+                $item->entryid = null;
             }
         }
 
@@ -355,35 +358,24 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
                     $sourceitem = portfolioact_template_item::getitem($items[$itemid]->reference);
                     //swap the settings keys so the ref item now has those of its source item
                     $settingskeys =  $sourceitem->settingskeys;
-                    //portfolioact_template_item_instruction
-                    if ($sourceitem instanceof portfolioact_template_item_instruction) {
-                        $settingskeys['questiontext'] =
-                           portfolioact_template_item_instruction::substitute_codes
-                              ($settingskeys['questiontext'], $actid);
-                    }
                     //Swap type so refered to as per original
                     $items[$itemid]->type = $sourceitem->type;
-                }
-
-                if ($items[$itemid]->type == 'instruction') {
-                    $settingskeys['questiontext'] =
-                        portfolioact_template_item_instruction::substitute_codes
-                           ($settingskeys['questiontext'], $actid);
-
                 }
 
                 $itemclass = 'portfolioact_template_item_'.$items[$itemid]->type;
 
                 if (method_exists($itemclass, 'format_entry_for_export')) {
 
-                    $items[$itemid]->entry = $itemclass::format_entry_for_export
-                         ($items[$itemid]->entry);
+                    $items[$itemid]->entry = $itemclass::format_entry_for_export($items[$itemid]);
                 }
 
                 if ($settingskeys['savewithexport'] == 1) {
                     $outputline = '';
                     $outputline = format_text($settingskeys['questiontext'], FORMAT_HTML,
                         $formatoptions);
+                    if (method_exists($itemclass, 'format_question_for_export')) {
+                        $outputline = $itemclass::format_question_for_export($outputline, $items[$itemid], $actid);
+                    }
                     if (  (isset($items[$itemid]->entry)) ) {
                         $outputline.= format_text($items[$itemid]->entry, FORMAT_HTML,
                             $formatoptions);
@@ -759,37 +751,25 @@ class portfolioact_template {
      * @return boolean
      */
 
-
     public static function delete($templateid) {
         global $DB, $USER;
         $transaction = $DB->start_delegated_transaction();
 
-        $DB->delete_records_select('portfolioact_template', "id = ".
-        $templateid);
-
-        $pages = $DB->get_records("portfolioact_tmpl_pages",
-        array('template'=>$templateid), null, "id");
+        $pages = $DB->get_records('portfolioact_tmpl_pages',
+                array('template' => $templateid), null, 'id');
 
         $pageskeyed = array_keys($pages);
 
-        $itemsrecs = $DB->get_records_list('portfolioact_tmpl_items', 'page',
-        $pageskeyed, null, 'id');
-
-        $DB->delete_records_select('portfolioact_tmpl_pages',
-          "template = ".$templateid);
-
-        if (! empty($pageskeyed)) {
-
-            $DB->delete_records_list('portfolioact_tmpl_items', 'page' ,
-            $pageskeyed);
+        if (!empty($pageskeyed)) {
+            $templ = new portfolioact_template($templateid);
+            foreach ($pageskeyed as $pageid) {
+                $templ->delete_page($pageid, false);
+            }
         }
+
+        $DB->delete_records('portfolioact_template', array('id' => $templateid));
 
         $transaction->allow_commit();
-
-        if (! empty($itemsrecs)) {
-            $items = array_keys($itemsrecs);
-            portfolioactmode_template_delete_entries($USER->id, $items);
-        }
 
         return true;
 
@@ -802,49 +782,54 @@ class portfolioact_template {
      * Cascade deletes its items.
      *
      * @param int $pageid
+     * @param bool $updateparent Update Template info to reflect delete
      */
 
-    public function delete_page($pageid) {
+    public function delete_page($pageid, $updateparent = true) {
 
         global $USER;
 
-        $itemsrecs = $this->DB->get_records
-            ('portfolioact_tmpl_items', array('page'=>$pageid), null, 'id');
+        $transaction = $this->DB->start_delegated_transaction();
+        $itemsrecs = $this->DB->get_records('portfolioact_tmpl_items',
+                array('page' => $pageid), null, 'id');
         //empty array if empty
         $items = array_keys($itemsrecs);
-        $transaction = $this->DB->start_delegated_transaction();
 
-        //delete the page
-        $this->DB->delete_records_select('portfolioact_tmpl_pages',
-            "id = ".$pageid);
-
-        //delete any items belonging to this page
-        $this->DB->delete_records_select('portfolioact_tmpl_items',
-            "page = ".$pageid);
-
-        //remove the pageid from the pageorder string leaving others unchanged
-        $rec = $this->DB->get_record('portfolioact_template',
-        array('id'=>$this->id), 'pageorder');
-        $pageorder = $rec->pageorder;
-        $template = new stdClass;
-        $template->id = $this->id;
-        $template->timemodified = time();
-
-        if (!is_null($pageorder )) {
-            $list = explode(",", $pageorder);
-            $newlist = array();
-
-            foreach ($list as $pageorderelement) {
-                if ($pageorderelement != $pageid ) {
-                    $newlist[] = $pageorderelement;
-                }
+        // Cascade delete of items (Slower, but more flexible).
+        if (!empty($items)) {
+            foreach ($items as $itemid) {
+                $item = portfolioact_template_item::getitem($itemid);
+                $item->delete_item(false);
             }
-            $template->pageorder = implode(",", $newlist );
-            $this->DB->update_record('portfolioact_template', $template);
         }
-        $transaction->allow_commit();
 
-        portfolioactmode_template_delete_entries($USER->id, $items);
+        if ($updateparent) {
+            // remove the pageid from the pageorder string leaving others unchanged.
+            $rec = $this->DB->get_record('portfolioact_template',
+                    array('id' => $this->id), 'pageorder');
+            $pageorder = $rec->pageorder;
+            $template = new stdClass;
+            $template->id = $this->id;
+            $template->timemodified = time();
+
+            if (!is_null($pageorder)) {
+                $list = explode(",", $pageorder);
+                $newlist = array();
+
+                foreach ($list as $pageorderelement) {
+                    if ($pageorderelement != $pageid ) {
+                        $newlist[] = $pageorderelement;
+                    }
+                }
+                $template->pageorder = implode(",", $newlist );
+                $this->DB->update_record('portfolioact_template', $template);
+            }
+        }
+
+        // delete the page.
+        $this->DB->delete_records('portfolioact_tmpl_pages', array('id' => $pageid));
+
+        $transaction->allow_commit();
 
     }
 
@@ -1187,8 +1172,7 @@ abstract class  portfolioact_template_item {
 
         $this->DB = $DB;
 
-        $portfolioacttemplate = portfolioact_mode::get_mode_instance(null, 'template');
-        $this->renderer = $portfolioacttemplate->renderer;
+        $this->renderer = $PAGE->get_renderer('portfolioactmode_template');
 
         $this->formatoptions = portfolioactmode_template_formatoptions();
     }
@@ -1289,7 +1273,7 @@ abstract class  portfolioact_template_item {
      * object not required or false on failure
      */
     public static function create_element($pageid, $type, $name,
-    $settings = array(), $itemafter = null, $objectrequired = false) {
+    $settings = array(), $itemafter = null) {
 
         //TODO make this a transaction
         //TODO check $type in $items
@@ -1364,10 +1348,10 @@ abstract class  portfolioact_template_item {
 
         $DB->update_record('portfolioact_tmpl_pages', $page);
 
-        if ($objectrequired) {
+        if (!empty($settings['itemid'])) {
             $itemclass = "portfolioact_template_item_".$type;
             $obj = new $itemclass($itemid);
-            return $obj;
+            return $obj->update_element($name, $settings);
         } else {
             return true;
         }
@@ -1413,7 +1397,25 @@ abstract class  portfolioact_template_item {
 
 
     public function update_element($name, $settings = array()) {
-
+        global $PAGE;
+        if (!empty($settings['questiontext']) && !empty($settings['itemid'])) {
+            // Add file bits.
+            $fromform = new stdClass();
+            $fromform->body = null;
+            $fromform->body_editor = array(
+                    'text' => $settings['questiontext'],
+                    'itemid' => $settings['itemid'],
+                    'format' => FORMAT_HTML
+            );
+            $context = context_course::instance($PAGE->course->id);
+            $uploadopts = array('trusttext'=>true, 'subdirs'=>false, 'maxfiles'=>99,
+                    'maxbytes'=>$PAGE->course->maxbytes, 'context'=>$context);
+            // save and relink embedded images.
+            $fromform = file_postupdate_standard_editor($fromform, 'body', $uploadopts, $context,
+                    'portfolioactmode_template', 'question', $this->id);
+            $settings['questiontext'] = $fromform->body;
+            unset($settings['itemid']);
+        }
         $item = new stdClass;
         $item->id = $this->id;
         $item->name = $name;
@@ -1446,53 +1448,80 @@ abstract class  portfolioact_template_item {
      *
      */
 
-    public function delete_item() {
+    public function delete_item($updateparent = true) {
 
-        global $CFG, $USER;
+        global $CFG, $USER, $PAGE;
 
+        $transaction = $this->DB->start_delegated_transaction();
+
+        // Get any references to this item and delete them also.
         $sql = <<<EOD
-        SELECT i.id, i.name as itemname, t.name as templatename FROM
+        SELECT i.id, i.page FROM
         {portfolioact_tmpl_items} i
         INNER JOIN {portfolioact_tmpl_pages} p ON p.id = i.page
         INNER JOIN {portfolioact_template} t ON t.id = p.template
         WHERE i.reference = ?
 EOD;
 
-        $sourceitems = $this->DB->get_records_sql($sql, array($this->id));
+        $refitems = $this->DB->get_records_sql($sql, array($this->id));
 
-        if (! empty($sourceitems)) {
-            return $sourceitems;
-        }
-
-        $transaction = $this->DB->start_delegated_transaction();
-        $this->DB->delete_records_select('portfolioact_tmpl_items',
-            "id = ".$this->id);
-
-        //remove the itemid from the pageorder string leaving others unchanged
-        $rec = $this->DB->get_record('portfolioact_tmpl_pages',
-        array('id'=>$this->pageid), 'itemorder');
-        $itemorder = $rec->itemorder;
-        $page = new stdClass;
-        $page->id = $this->pageid;
-
-        if (!is_null($itemorder )) {
-
-            $list = explode(",", $itemorder);
-            $newlist = array();
-
-            foreach ($list as $itemorderelement) {
-                if ($itemorderelement != $this->id ) {
-                    $newlist[] = $itemorderelement;
-                }
+        if (!empty($refitems)) {
+            foreach ($refitems as $itemid) {
+                $item = portfolioact_template_item::getitem($itemid->id);
+                // Update parent always.
+                $item->delete_item(true);
             }
-
-            $page->itemorder = implode(",", $newlist );
-            $this->DB->update_record('portfolioact_tmpl_pages', $page);
         }
+
+        $this->DB->delete_records('portfolioact_tmpl_items', array('id' => $this->id));
+        if ($updateparent) {
+            // remove the itemid from the pageorder string leaving others unchanged.
+            $rec = $this->DB->get_record('portfolioact_tmpl_pages',
+                    array('id' => $this->pageid), 'itemorder');
+            $itemorder = $rec->itemorder;
+            $page = new stdClass();
+            $page->id = $this->pageid;
+
+            if (!is_null($itemorder)) {
+
+                $list = explode(",", $itemorder);
+                $newlist = array();
+
+                foreach ($list as $itemorderelement) {
+                    if ($itemorderelement != $this->id ) {
+                        $newlist[] = $itemorderelement;
+                    }
+                }
+
+                $page->itemorder = implode(",", $newlist);
+                $this->DB->update_record('portfolioact_tmpl_pages', $page);
+            }
+        }
+
         $transaction->allow_commit();
 
-        portfolioactmode_template_delete_entries($USER->id, array($this->id));
-
+        // Delete any files in question.
+        if ($this->type != 'reference') {
+            if (isset($PAGE->course->id) && $PAGE->course->id != SITEID) {
+                $context = context_course::instance($PAGE->course->id);
+            } else {
+                // Get course id from template item (e.g. if deleting course).
+                $sql = <<<EOD
+                    SELECT t.course FROM
+                    {portfolioact_tmpl_items} i
+                    INNER JOIN {portfolioact_tmpl_pages} p ON p.id = i.page
+                    INNER JOIN {portfolioact_template} t ON t.id = p.template
+                    WHERE i.id = ?
+EOD;
+                $courseid = $this->DB->get_record_sql($sql, array($this->id));
+                $context = context_course::instance($courseid->course);
+            }
+            $fs = get_file_storage();
+            $fs->delete_area_files($context->id, 'portfolioactmode_template', 'question', $this->id);
+            portfolioactmode_template_delete_entries(array($this->id), $context->id);
+        } else {
+            portfolioactmode_template_delete_entries(array($this->id));
+        }
         return true;
 
     }
@@ -1521,6 +1550,36 @@ EOD;
             $this->entryid = $entry->id;
             return $entry->entry;
         }
+    }
+
+    public function format_question_for_display($text) {
+        global $PAGE;
+        $context = context_course::instance($PAGE->course->id);
+        return file_rewrite_pluginfile_urls($text, 'pluginfile.php',
+                $context->id, 'portfolioactmode_template', 'question', $this->id);
+    }
+
+    /**
+     * Called by get_data_for_export()
+     * Formats text ready for export by adding images
+     * @param string $output
+     * @param object $item
+     * @param int $actid
+     * @return string
+     */
+    public static function format_question_for_export($output, $item, $actid) {
+        global $DB;
+        if (stripos($output, '@@PLUGINFILE@@') !== false) {
+            $portfolioact = $DB->get_record('portfolioact', array('id' => $actid), 'course', MUST_EXIST);
+            $context = context_course::instance($portfolioact->course);
+            if (!empty($item->reference)) {
+                $item->id = $item->reference;
+            }
+            $output = file_rewrite_pluginfile_urls($output,
+                    'mod/portfolioact/mode/template/pluginfile.php',
+                    $context->id, 'portfolioactmode_template', 'question', $item->id);
+        }
+        return $output;
     }
 
     /**
@@ -1585,7 +1644,8 @@ portfolioact_template_item {
                  'questiontext'=>array('control'=>'editor',
                  'defaultvalue'=>'', 'label'=>get_string('itemlargetextlabel',
                  'portfolioactmode_template'), 'helptextstring'=>'itemlargetextassist',
-                 'helptextfile'=>'portfolioactmode_template'),
+                 'helptextfile'=>'portfolioactmode_template',
+                 'filearea' => 'instruction'),
                  'displaysavestatus'=>array('control'=>'select',
                  'defaultvalue'=>'0',
              'values'=>array('0'=>get_string('showandsave', 'portfolioactmode_template'),
@@ -1671,12 +1731,15 @@ portfolioact_template_item {
      *
      * @see portfolioact_template_item->display()
      */
-
     public function display(&$form, $actid = null, $id = null) {
+        global $PAGE;
+        $form = &$form->formhandle;
         $instructiontext = $this->settingskeys['questiontext'];
         $instructiontext = self::substitute_codes($instructiontext, $actid);
         $instructiontext = format_text($instructiontext,
             FORMAT_HTML, $this->formatoptions);
+
+        $instructiontext = $this->format_question_for_display($instructiontext);
 
         if (! is_null($id)) {
             $uniquename = "item_".$id;
@@ -1693,6 +1756,13 @@ portfolioact_template_item {
         //$form->addElement
         //('html', $this->renderer->render_portfolioactmode_template_break());
 
+    }
+
+    // Override parent to add in substitution codes into export.
+    public static function format_question_for_export($output, $item, $actid) {
+        $instructiontext = self::substitute_codes($output, $actid);
+        $instructiontext = parent::format_question_for_export($instructiontext, $item, $actid);
+        return $instructiontext;
     }
 
 
@@ -1732,6 +1802,7 @@ portfolioact_template_item {
 
         return $newtext;
     }
+
 }
 
 /**
@@ -1798,7 +1869,7 @@ class  portfolioact_template_item_text extends portfolioact_template_item {
 
     public function savedata($entry, $actid = null) {
 
-        global $USER;
+        global $USER, $COURSE;
 
         $data = new stdClass();
         $data->timemodified = time();
@@ -1816,11 +1887,30 @@ class  portfolioact_template_item_text extends portfolioact_template_item {
         if ($entryrecord) {
             $data->id = $entryrecord->id;
             $this->DB->update_record('portfolioact_tmpl_entries', $data);
+            $entryid = $entryrecord->id;
         } else {
             $data->itemid = $this->id;
             $data->userid = $USER->id;
 
-            $this->DB->insert_record('portfolioact_tmpl_entries', $data, false);
+            $entryid = $this->DB->insert_record('portfolioact_tmpl_entries', $data, true);
+        }
+
+        if (strpos($data->entry, 'draftfile.php') != false) {
+            // Add files only when needed.
+            $fromform = new stdClass();
+            $fromform->body = null;
+            $fromform->body_editor = $entry;
+            $ccontext = context_course::instance($COURSE->id);
+            $maxsize = get_user_max_upload_file_size($ccontext, 0, $COURSE->maxbytes);
+            $uploadopts = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => 99,
+                    'maxbytes' => $maxsize, 'context' => $ccontext);
+            // save and relink embedded images.
+            $fromform = file_postupdate_standard_editor($fromform, 'body', $uploadopts, $ccontext,
+                    'portfolioactmode_template', 'entry', $entryid);
+            $data = new stdClass();
+            $data->id = $entryid;
+            $data->entry = $fromform->body;
+            $this->DB->update_record('portfolioact_tmpl_entries', $data);
         }
 
     }
@@ -1832,12 +1922,12 @@ class  portfolioact_template_item_text extends portfolioact_template_item {
      */
 
     public function display(&$form, $actid = null, $id = null) {
-
-        $form->addelement('html', html_writer::start_tag('div',
+        global $USER, $COURSE;
+        $form->formhandle->addelement('html', html_writer::start_tag('div',
             array('class' => 'pat_item_' . $this->type)));
         $userdata=$this->getdata($actid);
 
-        if (! is_null($id)) {
+        if (!is_null($id)) {
             $uniquename = "item_".$id;
         } else {
             $uniquename = "item_".$this->id;
@@ -1847,26 +1937,58 @@ class  portfolioact_template_item_text extends portfolioact_template_item {
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
 
-        $form->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
+        $question_text = $this->format_question_for_display($question_text);
+
+        $form->formhandle->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
         ($question_text));
 
         if ($this->settingskeys['htmlformat'] == 1) {
-            $editor = $form->addElement('editor', $uniquename,
-            '', null );
-            $form->setType($uniquename, PARAM_RAW);
-            $editor->setValue(array('text'=>$userdata));
-
+            // Add image upload support.
+            $data = new stdClass();
+            $settingformat = $uniquename . 'format';
+            $data->$settingformat = FORMAT_HTML;
+            $data->$uniquename = $userdata;
+            $ccontext = context_course::instance($COURSE->id);
+            $maxsize = get_user_max_upload_file_size($ccontext, 0, $COURSE->maxbytes);
+            $uploadopts = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => 99,
+                    'maxbytes' => $maxsize, 'context' => $ccontext);
+            $data = file_prepare_standard_editor($data, $uniquename,
+                    $uploadopts, $ccontext, 'portfolioactmode_template',
+                    'entry', $this->entryid);
+            $editor = $form->formhandle->addElement('editor', $uniquename . '_editor',
+                    '', null, $uploadopts);
+            $form->set_data($data);
         } else {
-            $editor = $form->addElement('textarea', $uniquename,
-            '', null);
+            $editor = $form->formhandle->addElement('textarea', $uniquename, '', null);
             $editor->setValue($userdata);
 
         }
 
         //$form->addElement
         //('html', $this->renderer->render_portfolioactmode_template_break());
-        $form->addelement('html', html_writer::end_tag('div'));
+        $form->formhandle->addelement('html', html_writer::end_tag('div'));
 
+    }
+
+    /**
+     * Takes entry record and rewrites pluginfile.
+     * @param object $data
+     * @return string
+     */
+    public static function format_entry_for_export($data) {
+        global $USER, $COURSE;
+        if (is_null($data->entry)) {
+            return '';
+        }
+        if (strpos($data->entry, '@@PLUGINFILE@@') !== false) {
+            // Add image upload support.
+            $ccontext = context_course::instance($COURSE->id);
+            $data = file_rewrite_pluginfile_urls($data->entry,
+                    'mod/portfolioact/mode/template/pluginfile.php', $ccontext->id,
+                    'portfolioactmode_template', 'entry', $data->entryid);
+            return $data;
+        }
+        return $data->entry;
     }
 
 }
@@ -1959,7 +2081,7 @@ class  portfolioact_template_item_numeric extends portfolioact_template_item {
      */
 
     public function display(&$form, $actid = null, $id = null) {
-
+        $form = &$form->formhandle;
         $form->addelement('html', html_writer::start_tag('div',
             array('class' => 'pat_item_' . $this->type)));
         $userdata=$this->getdata($actid);
@@ -1974,7 +2096,7 @@ class  portfolioact_template_item_numeric extends portfolioact_template_item {
 
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
-
+        $question_text = $this->format_question_for_display($question_text);
         $form->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
         ( $question_text));
 
@@ -2078,7 +2200,7 @@ class  portfolioact_template_item_duration extends portfolioact_template_item {
      */
 
     public function display(&$form, $actid = null, $id = null) {
-
+        $form = &$form->formhandle;
         $form->addelement('html', html_writer::start_tag('div',
             array('class' => 'pat_item_' . $this->type)));
         $userdata=$this->getdata($actid);
@@ -2093,7 +2215,7 @@ class  portfolioact_template_item_duration extends portfolioact_template_item {
 
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
-
+        $question_text = $this->format_question_for_display($question_text);
         $form->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
         ($question_text));
 
@@ -2118,6 +2240,7 @@ class  portfolioact_template_item_duration extends portfolioact_template_item {
      */
 
     public static function format_entry_for_export($data) {
+        $data = $data->entry;
         if (is_null($data)) {
             return "";
         }
@@ -2218,7 +2341,7 @@ class  portfolioact_template_item_datepicker extends portfolioact_template_item 
      */
 
     public static function format_entry_for_export($data) {
-
+        $data = $data->entry;
         if (empty($data)) {
             return "";
         }
@@ -2289,7 +2412,7 @@ class  portfolioact_template_item_datepicker extends portfolioact_template_item 
      */
 
     public function display(&$form, $actid = null, $id = null) {
-
+        $form = &$form->formhandle;
         $form->addelement('html', html_writer::start_tag('div',
             array('class' => 'pat_item_' . $this->type)));
 
@@ -2305,6 +2428,7 @@ class  portfolioact_template_item_datepicker extends portfolioact_template_item 
 
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
+        $question_text = $this->format_question_for_display($question_text);
 
          $form->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
         ($question_text));
@@ -2389,7 +2513,7 @@ class  portfolioact_template_item_checkbox extends portfolioact_template_item {
         }
 
         $r = $PAGE->get_renderer('portfolioactmode_template');
-
+        $data = $data->entry;
         if (is_null($data)) {
             return "";
         }
@@ -2461,7 +2585,7 @@ class  portfolioact_template_item_checkbox extends portfolioact_template_item {
      */
 
     public function display(&$form, $actid = null, $id = null) {
-
+        $form = &$form->formhandle;
         $form->addelement('html', html_writer::start_tag('div',
             array('class' => 'pat_item_' . $this->type)));
 
@@ -3065,26 +3189,31 @@ function portfolioactmode_template_isnumeric($a) {
  *
  * Delete some entries for the given user (not necessarily the logged in user).
  *
- * @param int $userid
  * @param array $itemids
+ * @param int $filecontext ID of (course) context of any files against entry
  * @return boolean
  *
  */
 
-function portfolioactmode_template_delete_entries($userid, $itemids) {
+function portfolioactmode_template_delete_entries($itemids, $filecontext = null) {
     global $DB;
 
-    $itemidsimploded = implode(",", $itemids);
-
-    if (empty($itemidsimploded)) {
+    if (empty($itemids)) {
         return true;
     }
-    $params = array($userid);
+    $params = array();
     list($in_sql, $in_params) = $DB->get_in_or_equal($itemids);
-    $where = "userid=? AND itemid $in_sql";
+    $where = "itemid $in_sql";
     $params = array_merge($params, $in_params);
 
     $DB->delete_records_select('portfolioact_tmpl_entries', $where, $params);
+
+    if (!is_null($filecontext)) {
+        $fs = get_file_storage();
+        foreach ($itemids as $id) {
+            $fs->delete_area_files($filecontext, 'portfolioactmode_template', 'entry', $id);
+        }
+    }
 
     return true;
 
@@ -3102,4 +3231,63 @@ function portfolioactmode_template_formatoptions() {
             'filter'  => true
         );
 
+}
+
+/**
+ * Core hook that is called when downloading template files.
+ * @param unknown_type $course
+ * @param unknown_type $cm
+ * @param unknown_type $context
+ * @param unknown_type $filearea
+ * @param unknown_type $args
+ * @param unknown_type $forcedownload
+ * @return boolean
+ */
+function portfolioactmode_template_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
+    global $CFG, $DB, $USER;
+
+    if ($context->contextlevel != CONTEXT_MODULE && $context->contextlevel != CONTEXT_COURSE) {
+        return false;
+    }
+
+    $fileareas = array('question', 'entry');
+    if (!in_array($filearea, $fileareas)) {
+        return false;
+    }
+
+    $versionid = (int)array_shift($args);
+
+    $checklogin = true;
+    if (!empty($_SERVER['PHP_SELF'])) {
+        if (strpos($_SERVER['PHP_SELF'], 'mod/portfolioact/mode/template/pluginfile.php')) {
+            $checklogin = false;
+        }
+    }
+    if ($checklogin) {
+        require_course_login($course, true, $cm);
+        // Where file is stored against course context this is not so precise...
+        require_capability('mod/portfolioact:canview', $context);
+
+        if ($filearea == 'entry') {
+            // Make sure only owner can see.
+            $result = $DB->get_record('portfolioact_tmpl_entries', array('id' => $versionid));
+            if (!$result || $USER->id != $result->userid) {
+                return false;
+            }
+        }
+    }
+
+    $fs = get_file_storage();
+    $relativepath = implode('/', $args);
+    $fullpath = "/$context->id/portfolioactmode_template/$filearea/$versionid/$relativepath";
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        return false;
+    }
+
+    if (($filearea == 'question' || $filearea == 'entry') &&
+            !file_extension_in_typegroup($file->get_filename(), 'image')) {
+        return false;
+    }
+
+    send_stored_file($file, 0, 0, true); // download MUST be forced - security!
 }

@@ -50,6 +50,8 @@ class backup_portfolioact_activity_structure_step extends backup_activity_struct
         // Define sources
         $portfolioact->set_source_table('portfolioact', array('id' => backup::VAR_ACTIVITYID));
 
+        $portfolioact->annotate_files('mod_portfolioact', 'intro', null);
+
         // Return the root element (portfolioact), wrapped into standard activity structure
         return $this->prepare_activity_structure($portfolioact);
     }

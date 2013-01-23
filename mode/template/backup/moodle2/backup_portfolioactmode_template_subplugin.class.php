@@ -91,6 +91,9 @@ class backup_portfolioactmode_template_subplugin extends backup_subplugin {
         $subplugin_table_pages->set_source_table('portfolioact_tmpl_pages', array('template' => '../id'));
         $subplugin_table_items->set_source_table('portfolioact_tmpl_items', array('page' => '../id'));
 
+        $context = context_course::instance($this->task->get_courseid());
+        $subplugin_table_items->annotate_files('portfolioactmode_template', 'question', 'id', $context->id);
+
         if ($userinfo) {
 
             //we have to work out the datamode first
@@ -107,6 +110,8 @@ class backup_portfolioactmode_template_subplugin extends backup_subplugin {
             }
 
             $subplugin_table_entries->annotate_ids('user', 'userid');
+            $context = context_course::instance($this->task->get_courseid());
+            $subplugin_table_entries->annotate_files('portfolioactmode_template', 'entry', 'id', $context->id);
         }
 
         $context = get_context_instance(CONTEXT_COURSE, $this->task->get_courseid());

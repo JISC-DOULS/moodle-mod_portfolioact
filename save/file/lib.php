@@ -250,11 +250,25 @@ class portfolioact_file_save extends portfolioact_save_plugin {
             'font-name-default' => 'Arial',
             'font-size-default' => '24',
         );
+        $images = array();
+        // Find plugin images in document.
+        $fs = get_file_storage();
+        $root = str_replace('/', '\/', preg_quote($CFG->wwwroot));
+        $pattern = '/src="' . $root . '.*?pluginfile\.php.*?\"/';
+        preg_match_all($pattern, $this->exportdata, $matches);
+        foreach ($matches[0] as $match) {
+            $match = str_replace('src="', '', rtrim($match, '"'));
+            $filepath = str_replace($CFG->wwwroot . '/mod/portfolioact/mode/template/pluginfile.php', '', $match);
+            $file = $fs->get_file_by_hash(sha1($filepath));
+            if ($file) {
+                $images[$match] = $file->get_content();
+            }
+        }
 
         try {
             // Fix Special Chars by adding utf-8 meta tag to content.
             $this->exportdata = '<meta http-equiv="content-type" content="text/html; charset=utf-8">' . $this->exportdata;
-            $this->rtf = html2rtf::convert($this->exportdata, $rtfopts);
+            $this->rtf = html2rtf::convert($this->exportdata, $rtfopts, $images);
         } catch (Exception $e ) {
             throw $e;
         }

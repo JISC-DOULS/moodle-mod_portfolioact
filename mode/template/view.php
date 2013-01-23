@@ -113,9 +113,9 @@ function portfolioactmode_template_view($subplug) {
         $form->formhandle->addElement('header', 'item' . $item->id, '');
 
         if (($subplug->settings->datamode == 0) || ($item->type == 'instruction') ) {//activity mode
-            $item->object->display($form->formhandle, $subplug->settings->actid );
+            $item->object->display($form, $subplug->settings->actid );
         } else {
-            $item->object->display($form->formhandle);//course wide
+            $item->object->display($form);//course wide
         }
 
         $item->typecheck = $item->type;

@@ -14,16 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
+ * Copy of pluginfile for (Google) export use - can be SSO disabled for public access.
  *
- * @package portfolioact
+ * @package    portfolioact
  * @subpackage portfolioactmode_template
- * @copyright 2011 The Open University
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2012 The Open University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+// Make sure this is only used for potfolioact stuff...
+$params = explode('/', $_SERVER['PATH_INFO']);
 
-//$module->version  = 0;           // If version == 0 then module will not be installed
-$plugin->version  = 2011071803;   // The current module version (Date: YYYYMMDDXX)
+if (!in_array('portfolioactmode_template', $params)) {
+    exit;
+}
+
+require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/pluginfile.php';

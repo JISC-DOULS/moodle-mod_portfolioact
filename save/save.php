@@ -38,6 +38,7 @@ $actid = required_param('actid', PARAM_INT);
 $cmid = required_param('id', PARAM_INT);
 $savetype = required_param('savetype', PARAM_ALPHA);
 $stage = optional_param('stage', 0, PARAM_INT);
+$noajax = optional_param('nojs', false, PARAM_BOOL);
 
 $portfolioact = $DB->get_record('portfolioact', array('id' => $actid), '*', MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $portfolioact->course), '*', MUST_EXIST);
@@ -53,7 +54,7 @@ $context = get_context_instance(CONTEXT_MODULE, $PAGE->cm->id);
 require_capability('mod/portfolioact:canview', $context );
 
 $url = new moodle_url('/mod/portfolioact/save/save.php',
-array('actid'=>$actid, 'type'=>$savetype));
+array('actid'=>$actid, 'savetype'=>$savetype, 'id' => $cmid));
 $PAGE->set_url($url);
 $title = $subplug->get_title();
 
@@ -69,7 +70,7 @@ if ($savetype == 'google') {
 
     $modetype = portfolioact_mode::get_plugin_mode($actid);
 
-    $ajaxenabled = ajaxenabled();
+    $ajaxenabled = ajaxenabled() && !$noajax;
 
     echo $subplug->renderer->header();
     echo $subplug->renderer->render_page_header();
@@ -86,71 +87,47 @@ if ($savetype == 'google') {
         include_once($CFG->dirroot.'/mod/portfolioact/save/google/lib.php');
     }
 
-    $savedgoogletoken = portfolioactsave_google_docs::get_sesskey($USER->id, $cm->id);
-
-    if ($stage == 0) {
-
-        $realm =  'http://docs.google.com/feeds/ http://spreadsheets.google.com/feeds/ http://docs.googleusercontent.com/';
-        $return = qualified_me() . '&stage=1';
-
-        if (empty($savedgoogletoken)) {
-            $uri = portfolioactsave_google_authsub::login_url($return, $realm, $cm->id);
-            //Check if need to send message about domain
-            $domainmsg = false;
-            $domain = get_config('portfolioactsave_google', 'google_domain');
-            $context = get_context_instance(CONTEXT_MODULE, $subplug->cmid);
-            if ($domain != '' &&
-                !has_capability('portfolioactsave/google:anydomain', $context)) {
-                $domainmsg = $domain;
-            }
-            echo $subplug->renderer->render_googlesignin($uri, $domainmsg);
-            echo $subplug->renderer->footer();
-            exit;
-
-        } else {
-            try {
-                $google_authsub =
-                    new portfolioactsave_google_authsub($savedgoogletoken,
-                        '', array('debug'=>0), $cm->id);
-                //attempt to log them on with the stored token failed. Start again.
-            } catch (Exception $e) {
-                portfolioactsave_google_docs::delete_sesskey($USER->id, $cm->id);
-                $uri = $google_authsub::login_url($return, $realm );
-                $domainmsg = false;
-                $domain = get_config('portfolioactsave_google', 'google_domain');
-                $context = get_context_instance(CONTEXT_MODULE, $subplug->cmid);
-                if ($domain != '' &&
-                    !has_capability('portfolioactsave/google:anydomain', $context)) {
-                    $domainmsg = $domain;
+    // Get OAuth authorisation credentials - use standard portfolio options
+    $clientid = '';
+    $secret = '';
+    if ($record = $DB->get_record('portfolio_instance', array('plugin' => 'googledocs', 'visible' => 1))) {
+        $id = $record->id;
+        if ($configs = $DB->get_records('portfolio_instance_config', array('instance' => $id))) {
+            foreach ($configs as $config) {
+                if ($config->name == 'clientid' && !empty($config->value)) {
+                    $clientid = $config->value;
                 }
-                echo $subplug->renderer->render_googlesignin($uri, $domainmsg);
-                echo $subplug->renderer->footer();
-                exit;
+                if ($config->name == 'secret' && !empty($config->value)) {
+                    $secret = $config->value;
+                }
             }
         }
-
-    } else if ($stage == 1) {//come back from google.
-
-        $authtoken = $_GET['token'];
-        try {
-            $google_authsub = new portfolioactsave_google_authsub('',
-                $authtoken , array('debug'=>0), $cm->id);
-        } catch (Excception $e) {
-            $url = new moodle_url('/mod/portfolioact/view.php',
-                array('id' => $cm->id ));
-            throw new moodle_exception('exportgoogleerror',
-                'portfolioactsave_google', $url);
-        }
-        //we can save the upgraded token
-        portfolioactsave_google_docs::set_sesskey($google_authsub->get_sessiontoken(),
-            $USER->id, $cm->id);
-
-    } else {
-        throw new coding_exception('Script called with unexpected parameter');
     }
 
+    if (empty($clientid) || empty($secret)) {
+        throw new moodle_exception('Google Docs portfolio plugin must be fully configured in order to export');
+    }
 
+    $returnurl = new moodle_url(qualified_me());
+    $returnurl->param('sesskey', sesskey());
+    $google_authsub = new portfolioactsave_google_authsub($clientid, $secret, $returnurl,
+            portfolioactsave_google_docs::REALM);
+    $google_authsub->set_context(context_module::instance($cm->id));
 
+    if (!$google_authsub->is_logged_in()) {
+        $uri = $google_authsub->get_login_url();
+        $uri = str_replace('&scope=', '%26stage%3D1&scope', $uri);
+        $domainmsg = false;
+        $domain = get_config('portfolioactsave_google', 'google_domain');
+        $context = context_module::instance($subplug->cmid);
+        if ($domain != '' &&
+                !has_capability('portfolioactsave/google:anydomain', $context)) {
+            $domainmsg = $domain;
+        }
+        echo $subplug->renderer->render_googlesignin($uri, $domainmsg);
+        echo $subplug->renderer->footer();
+        exit;
+    }
 
     if (! $ajaxenabled) {
         $result = $subplug->retrieve_data($modetype, $actid);
@@ -163,7 +140,7 @@ if ($savetype == 'google') {
 
 
     if ($ajaxenabled) {
-        echo $subplug->renderer->render_javascript_disabled_message();
+        echo $subplug->renderer->render_javascript_disabled_message(qualified_me());
     }
 
 

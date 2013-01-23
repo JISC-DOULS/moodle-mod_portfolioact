@@ -124,7 +124,9 @@ class portfolioact_google_save extends portfolioact_save_plugin {
         }
 
         if ($course_collection === false) {
-            $this->error_message = get_string('exportfailed', 'portfolioactsave_google');;
+            $this->error_message = get_string('retryneeded', 'portfolioactsave_google');;
+            // Error may be because authorisation revoked. Reset token.
+            $google_authsub->log_out();
             return false;
 
         }
@@ -165,7 +167,7 @@ class portfolioact_google_save extends portfolioact_save_plugin {
                         return false;
                     }
                     $convertingmimetypes = $this->docs->getconvertable();
-                    if ($sparebytes === false  ) {
+                    if ($convertingmimetypes === false) {
                         $this->error_message =
                             get_string('unknownerror', 'portfolioactsave_google');
                         return false;
@@ -403,44 +405,22 @@ class portfolioactsave_google_docs {
      */
     public function __construct($authsub) {
 
-        if (is_a($authsub, 'google_auth_request')) {
+        if (is_a($authsub, 'oauth2_client')) {
             $this->authsub = $authsub;
-            $this->authsub->add_persistant_header('GData-Version: 3.0');
+            $this->reset_curl_state();
         } else {
             throw new coding_exception('Google Curl Request object not given');
         }
     }
 
-    public static function get_sesskey($userid, $cmid) {
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
-        if (get_config('portfolioactsave_google', 'google_domain') != '' &&
-            !has_capability('portfolioactsave/google:anydomain', $context, $userid)) {
-            return get_user_preferences(self::ALTUSER_PREF_NAME, false, $userid);
-        } else {
-            return get_user_preferences(self::USER_PREF_NAME, false, $userid);
-        }
+    /**
+     * Resets state on oauth curl object and set GData protocol
+     * version
+     */
+    public function reset_curl_state() {
+        $this->authsub->reset_state();
+        $this->authsub->setHeader('GData-Version: 3.0');
     }
-
-    public static function set_sesskey($value, $userid, $cmid) {
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
-        if (get_config('portfolioactsave_google', 'google_domain') != '' &&
-            !has_capability('portfolioactsave/google:anydomain', $context, $userid)) {
-            return set_user_preference(self::ALTUSER_PREF_NAME, $value, $userid);
-        } else {
-            return set_user_preference(self::USER_PREF_NAME, $value, $userid);
-        }
-    }
-
-    public static function delete_sesskey($userid, $cmid) {
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
-        if (get_config('portfolioactsave_google', 'google_domain') != '' &&
-            !has_capability('portfolioactsave/google:anydomain', $context, $userid)) {
-            return unset_user_preference(self::ALTUSER_PREF_NAME, $userid);
-        } else {
-            return unset_user_preference(self::USER_PREF_NAME, $userid);
-        }
-    }
-
 
     /**
      * Sends a file to Google Docs using the resumable method
@@ -475,6 +455,7 @@ class portfolioactsave_google_docs {
          */
 
         global $CFG;
+        $this->reset_curl_state();
         $filesize = $file->get_filesize();
         $this->authsub->setHeader("Content-Length: 0");
         $this->authsub->setHeader("Content-Type: ". $file->get_mimetype());
@@ -501,7 +482,7 @@ class portfolioactsave_google_docs {
 
         //send the file in one chunk
         $range_string = "bytes 0-". ($filesize - 1) . "/" . $filesize;
-
+        $this->reset_curl_state();
         $this->authsub->setHeader("Content-Length: ".$filesize);
         $this->authsub->setHeader("Content-Type: ". $file->get_mimetype());
         $this->authsub->setHeader("Content-Range: ". $range_string );
@@ -550,6 +531,7 @@ class portfolioactsave_google_docs {
     $targetcollectionresourceid) {
 
         global $CFG;
+        $this->reset_curl_state();
         $filesize = strlen($filecontents);
         $this->authsub->setHeader("Content-Length: 0");
         $this->authsub->setHeader("Content-Type: ". $mimetype);
@@ -579,7 +561,7 @@ class portfolioactsave_google_docs {
         rewind($fh);
 
         $range_string = "bytes 0-". ($filesize - 1) . "/" . $filesize;
-
+        $this->reset_curl_state();
         $this->authsub->setHeader("Content-Length: ".$filesize);
         $this->authsub->setHeader("Content-Type: ". $mimetype);
         $this->authsub->setHeader("Content-Range: ". $range_string );
@@ -646,6 +628,7 @@ class portfolioactsave_google_docs {
     public function collection_exists_in_root($collectionname) {
         global $CFG, $OUTPUT;
 
+        $this->reset_curl_state();
         //get all items in root matching the query string
         $url = self::GOOGLEFEEDS . self::ROOTFOLDERFOLDERS . '?title='.urlencode($collectionname).
              '&title-exact=true';
@@ -724,6 +707,7 @@ class portfolioactsave_google_docs {
 
     public function getsparebytes() {
 
+        $this->reset_curl_state();
         $content = $this->authsub->get(self::METAINFORMATION, null, array('CURLOPT_HEADER'=>false));
 
         if (! isset($this->cache['ACCOUNTMETAINFORMATION'] )) {
@@ -753,6 +737,7 @@ class portfolioactsave_google_docs {
         if (isset($this->cache['ACCOUNTMETAINFORMATION'] )) {
             $content = $this->cache['ACCOUNTMETAINFORMATION'];
         } else {
+            $this->reset_curl_state();
             $content = $this->authsub->get(self::METAINFORMATION,
                 null, array('CURLOPT_HEADER'=>false));
             if ($this->authsub->info['http_code'] !== 200) {
@@ -786,7 +771,7 @@ class portfolioactsave_google_docs {
 
 
     public function create_sub_collection($course_collection, $subcollectionname) {
-
+        $this->reset_curl_state();
         $this->authsub->setHeader("Content-Type: application/atom+xml");
         $url = self::GOOGLEFEEDS . self::FULL . '/folder:'.$course_collection.'/contents';
         $data =  <<<EOF
@@ -846,7 +831,7 @@ EOF;
             $url = $next;
 
         }
-
+        $this->reset_curl_state();
         $content = $this->authsub->get($url, null, array('CURLOPT_HEADER'=>false));
 
         $xml = new SimpleXMLElement($content);
@@ -894,13 +879,12 @@ EOF;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class portfolioactsave_google_authsub extends google_authsub {
+class portfolioactsave_google_authsub extends google_oauth {
 
     private static $context = '';//Store context to pickup in login checks
 
-    public function __construct($sessiontoken = '', $authtoken = '', $options = array(), $context) {
-        parent::__construct($sessiontoken, $authtoken, $options);
-        self::$context = get_context_instance(CONTEXT_MODULE, $context);
+    public function set_context($context) {
+        self::$context = $context;
     }
 
     /**
@@ -939,16 +923,13 @@ class portfolioactsave_google_authsub extends google_authsub {
      * @param string $realm
      * @param int $cmid optionally send cmid where static context not already set
      */
-    public static function login_url($returnaddr, $realm, $cmid = null) {
-        $orig = parent::login_url($returnaddr, $realm);
+    public function get_login_url() {
+        $orig = parent::get_login_url();
         //Check admin setting and capability to see if we force domain login
         $domain = get_config('portfolioactsave_google', 'google_domain');
-        if ($cmid) {
-            self::$context = get_context_instance(CONTEXT_MODULE, $cmid);
-        }
         if ($domain != '' &&
             !has_capability('portfolioactsave/google:anydomain', self::$context)) {
-            $orig .= '&hd=' . urlencode($domain);
+            $orig->param('hd', urlencode($domain));
         }
         return $orig;
     }

@@ -101,7 +101,7 @@ class restore_portfolioactmode_template_subplugin extends restore_subplugin {
 
         $data->actid = $this->get_new_parentid('portfolioact');
 
-        $this->portfolioactmode_scaffold->oldid = $data->scaffold;
+        // $this->portfolioactmode_scaffold->oldid = $data->scaffold;
         $data->scaffold = null; //we don't know it yet and it may just be null anyway
         $data->template = 0; //we don't know it yet
         $newid = $DB->insert_record('portfolioact_tmpl_settings', $data);
@@ -230,7 +230,7 @@ class restore_portfolioactmode_template_subplugin extends restore_subplugin {
         }
 
         $orig_course_context = $this->task->get_info()->original_course_contextid;
-        $this->set_mapping('portfolioactmode_items', $oldid, $newitemid, false, $orig_course_context );
+        $this->set_mapping('portfolioactmode_items', $oldid, $newitemid, true, $orig_course_context );
     }
 
 
@@ -266,8 +266,9 @@ class restore_portfolioactmode_template_subplugin extends restore_subplugin {
         }
 
         $data->userid = $this->get_mappingid('user', $data->userid);
-        $DB->insert_record('portfolioact_tmpl_entries', $data);
-
+        $newid = $DB->insert_record('portfolioact_tmpl_entries', $data);
+        $orig_course_context = $this->task->get_info()->original_course_contextid;
+        $this->set_mapping('portfolioactmode_entries', $oldid, $newid, true, $orig_course_context );
     }
 
 
@@ -449,7 +450,7 @@ class restore_portfolioactmode_template_subplugin extends restore_subplugin {
         }
 
         $orig_course_context = $this->task->get_info()->original_course_contextid;
-        $this->set_mapping('portfolioactmode_items', $oldid, $newitemid, false, $orig_course_context );
+        $this->set_mapping('portfolioactmode_items', $oldid, $newitemid, true, $orig_course_context );
 
     }
 
@@ -506,6 +507,16 @@ class restore_portfolioactmode_template_subplugin extends restore_subplugin {
             $this->add_related_files('portfolioactmode_scaffold', 'scaffoldset',
                 'portfolioact_scaffold',  $orig_course_context, $this->oldscaffoldid );
         }
+        // Add item question images.
+        $orig_course_context = $this->task->get_info()->original_course_contextid;
+        $this->add_related_files('portfolioactmode_template', 'question',
+                'portfolioactmode_items', $orig_course_context);
+        if ($this->get_setting_value('userinfo')) {
+            // Add user files for entries.
+            $this->add_related_files('portfolioactmode_template', 'entry',
+                    'portfolioactmode_entries', $orig_course_context);
+        }
+
         //fix up the page order in the template
 
         if (! empty($this->oldpageorder)) {

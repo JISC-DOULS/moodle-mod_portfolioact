@@ -70,6 +70,6 @@ class restore_portfolioact_activity_structure_step extends restore_activity_stru
 
 
     protected function after_execute() {
-
+        $this->add_related_files('mod_portfolioact', 'intro', null);
     }
 }

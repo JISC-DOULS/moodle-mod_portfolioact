@@ -519,7 +519,10 @@ class portfolioactmode_template_renderer extends mod_portfolioact_renderer {
         global $OUTPUT;
         $topofpage = $OUTPUT->heading($subplug->cm->name, 2, 'portfolioacthead');
         if ($intro) {
-            $topofpage .= html_writer::tag('div', $subplug->portfolioact->intro,
+            $context = context_module::instance($subplug->cm->id);
+            $introtext = file_rewrite_pluginfile_urls($subplug->portfolioact->intro, 'pluginfile.php',
+                    $context->id, 'mod_portfolioact', 'intro', null);
+            $topofpage .= html_writer::tag('div', $introtext,
                 array('id' => 'portfolioact_intro_text'));
         }
         return $topofpage;
