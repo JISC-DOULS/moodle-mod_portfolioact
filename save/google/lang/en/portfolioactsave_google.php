@@ -26,12 +26,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Google Docs Export';
+$string['pluginname'] = 'Google Drive Export';
 $string['enabled'] = 'Enable export to Google';
-$string['enabled_desc'] = 'Users can export from activity to Google Docs.';
+$string['enabled_desc'] = 'Users can export from activity to Google Drive.';
 $string['admingoogle_domain'] = 'Use a Google Apps Domain for portfolioact export?';
 $string['admingoogle_domain_desc'] = 'Set to domain name to enable e.g. my.domain.com .';
-$string['save'] = 'Export to a Google Docs Account';
+$string['save'] = 'Export to a Google Drive Account';
 
 $string['google:anydomain'] = 'When restricting portfolioact export to a Google domain users with
  this capability are not restricted.';
@@ -43,14 +43,14 @@ $string['googlesignindomain'] = 'You must have signed up for a Google Apps accou
 $string['googlesignin'] = 'Export activity into your account';
 $string['postedok'] = 'File posted successfully.';
 $string['postednotok'] = 'File post was not successful.';
-$string['noscaffongoogledocs'] = 'Could not create the {$a} on Google docs';
-$string['exportgooglesuccess'] = 'The activity was successfully exported to your Google Docs Account.';
-$string['linktogoogle'] = 'Access Google Documents';
+$string['noscaffongoogledocs'] = 'Could not create the {$a} on Google Drive';
+$string['exportgooglesuccess'] = 'The activity was successfully exported to your Google Drive Account.';
+$string['linktogoogle'] = 'Access Google Drive';
 $string['exportgoogleerror'] = 'Sorry.  An error occurred while exporting the activity to the Google service. ';
 
 $string['loadinggoogle'] = 'Contacting Google...';
 $string['bepatient'] = 'This process can take several minutes. Please be patient.';
-$string['activityquotaexceeded'] = 'The activity cannot be exported as it would exceed your Google Docs account storage quota.';
+$string['activityquotaexceeded'] = 'The activity cannot be exported as it would exceed your Google Drive account storage quota.';
 $string['unknownerror'] = 'We do not have any more information about this error.';
 $string['connectionlost'] = 'We cannot connect you to Google. Please try and login again.';
 $string['exportgooglesuccesssome_errors'] = ' *The activity was sent to Google but not all the files were successfully transferred.';

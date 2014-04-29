@@ -44,7 +44,7 @@ $scaffold_plugin = new portfolioact_mode_scaffold();
 $actid = $scaffold_plugin->portfolioact->id;
 
 
-$context = get_context_instance(CONTEXT_MODULE, $scaffold_plugin->cm->id);
+$context = context_module::instance($scaffold_plugin->cm->id);
 require_capability('portfolioactmode/scaffold:editscaffolds', $context );
 
 

@@ -56,7 +56,7 @@ try {
 
     $clientid = '';
     $secret = '';
-    if ($record = $DB->get_record('portfolio_instance', array('plugin' => 'googledocs', 'visible' => 1))) {
+    if ($record = $DB->get_record('portfolio_instance', array('plugin' => 'googledocs'))) {
         $id = $record->id;
         if ($configs = $DB->get_records('portfolio_instance_config', array('instance' => $id))) {
             foreach ($configs as $config) {

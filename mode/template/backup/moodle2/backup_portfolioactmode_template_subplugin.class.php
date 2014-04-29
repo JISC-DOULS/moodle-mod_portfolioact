@@ -114,7 +114,7 @@ class backup_portfolioactmode_template_subplugin extends backup_subplugin {
             $subplugin_table_entries->annotate_files('portfolioactmode_template', 'entry', 'id', $context->id);
         }
 
-        $context = get_context_instance(CONTEXT_COURSE, $this->task->get_courseid());
+        $context = context_course::instance($this->task->get_courseid());
         $subplugin_table_optional_scaffold->annotate_files('portfolioactmode_scaffold', 'scaffoldset', 'id', $context->id);
 
         //now - get the templates which may be referenced, recursively

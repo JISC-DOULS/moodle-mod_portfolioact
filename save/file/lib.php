@@ -52,7 +52,7 @@ class portfolioact_file_save extends portfolioact_save_plugin {
 
     protected function __construct($actid, $cmid) {
         global $PAGE, $DB;
-        $this->renderer = $PAGE->get_renderer('mod_portfolioact_filesave');
+        $this->renderer = $PAGE->get_renderer('portfolioactsave_file');
         $this->actid = $actid;
         $this->cmid = $cmid;
         $this->mode = portfolioact_mode::get_plugin_mode($actid);

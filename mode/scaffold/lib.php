@@ -173,7 +173,7 @@ class portfolioact_mode_scaffold extends portfolioact_mode_plugin {
 
         $fs = get_file_storage();
         $portfolioact = $DB->get_record('portfolioact', array('id'=>$actid), 'course' );
-        $context = get_context_instance(CONTEXT_COURSE, $portfolioact->course);
+        $context = context_course::instance($portfolioact->course);
 
          //TODO maybe make the component here and in /scaffold/designer a constant
         $fileinfo = array(
@@ -362,7 +362,7 @@ class portfolioact_scaffold  {
         global $DB;
 
         $fs = get_file_storage();
-        $context = get_context_instance(CONTEXT_COURSE, $this->course);
+        $context = context_course::instance($this->course);
 
          //TODO maybe make the component here and in /scaffold/designer a constant
         $fileinfo = array(

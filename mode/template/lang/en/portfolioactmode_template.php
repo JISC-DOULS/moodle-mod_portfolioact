@@ -145,7 +145,17 @@ $string['itemtype_help'] = 'Required. The type of item you are adding.';
 $string['chooseitemtype'] = 'Choose item type';
 $string['contenttypes'] = 'Add content type:';
 $string['editcontenttypes'] = 'Content types';
-$string['editcontenttypes_help'] ='These are the different kinds of item you can add to your Template';
+$string['editcontenttypes_help'] ='These are the different kinds of item you can add to your Template:
+<ul>
+<li>Instruction - no response, purely text explaining what\'s required; codes can be used to include system data such as identifying the student</li>
+<li>Text Entry - question text along with student response, either in rich text using HTML editor or plain text only</li>
+<li>Checkbox - simple labelling of checkbox and control over the default ticked state</li>
+<li>Reference - this allows reuse of items added to other pages or other activities</li>
+<li>Date selector - question text along with student response from a series of date dropdown/option lists</li>
+<li>Numeric - question text, student response will be numeric only</li>
+<li>Duration - question text along with numeric student response; with dropdown options on days, hours, minutes, seconds</li>
+</ul>
+';
 $string['itemafter'] = 'Add content after:';
 $string['edititemafter'] = 'Content after';
 $string['edititemafter_help'] ='Insert the new element after this element';
@@ -188,6 +198,9 @@ $string['itemlargetextassist_help'] = 'This is the text which appears to the use
 $string['instructionspecialmessage'] = 'Tip: select the help icon for details of substitution codes you can use in the text.';
 $string['itemnametype'] = 'Item name';
 $string['itemnametype_help'] = 'The name of your item';
+$string['itemtitle'] = 'Item title';
+$string['itemtitletype'] = 'Item title';
+$string['itemtitletype_help'] = 'A heading title that will be displayed with the item.';
 $string['newitemadded'] = 'New item added';
 $string['newitemnotadded'] = 'Sorry. A problem occured. New item not added. Please try again later.';
 $string['itembackbutton'] = 'Back to items';

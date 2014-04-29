@@ -49,7 +49,7 @@ $scaffold = new portfolioact_scaffold($scaffoldid);
 //the user or admin is on.
 //if we use CONTEXT_MODULE then if the scaffold is used in another
 //Activity we don't find the data
-$context = get_context_instance(CONTEXT_COURSE, $scaffold->course);
+$context = context_course::instance($scaffold->course);
 
 require_capability('portfolioactmode/scaffold:editscaffolds', $context );
 

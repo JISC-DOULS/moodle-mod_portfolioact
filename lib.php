@@ -31,7 +31,6 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once(dirname(__FILE__) . '/mode/lib.php');
 
 
 function portfolioact_supports($feature) {
@@ -198,6 +197,8 @@ function portfolioact_extend_settings_navigation(settings_navigation
     $settings, navigation_node $portfolioactnode) {
     global  $PAGE;
 
+    require_once(dirname(__FILE__) . '/mode/lib.php');
+
     $url = new moodle_url('/mod/portfolioact/mode/template/manager.php',
         array('id'=>$PAGE->cm->id, 'action'=>'list'));
     $portfolioactnode->add(get_string('managetemplates', 'portfolioactmode_template'), $url);
@@ -223,6 +224,8 @@ function portfolioact_extend_settings_navigation(settings_navigation
  */
 function portfolioact_delete_instance($id) {
     global $DB, $CFG;
+
+    require_once(dirname(__FILE__) . '/mode/lib.php');
 
     if (!$portfolioact = $DB->get_record('portfolioact', array('id'=>$id))) {
         return false;

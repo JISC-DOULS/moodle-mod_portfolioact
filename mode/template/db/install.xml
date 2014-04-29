@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/portfolioact/mode/template/db" VERSION="20110728" COMMENT="XMLDB file for Moodle mod/portfolioact/mode/template"
+<XMLDB PATH="mod/portfolioact/mode/template/db" VERSION="20130814" COMMENT="XMLDB file for Moodle mod/portfolioact/mode/template"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="portfolioact_template" COMMENT="Default comment for template, please edit me" NEXT="portfolioact_tmpl_settings">
+    <TABLE NAME="portfolioact_template" COMMENT="Default comment for template, please edit me">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="course"/>
-        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="name" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="course" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timecreated" NEXT="pageorder"/>
-        <FIELD NAME="pageorder" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="timemodified"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="pageorder" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="course"/>
-        <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id" PREVIOUS="primary"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="portfolioact_tmpl_settings" COMMENT="Default comment for the table, please edit me" PREVIOUS="portfolioact_template" NEXT="portfolioact_tmpl_pages">
+    <TABLE NAME="portfolioact_tmpl_settings" COMMENT="Default comment for the table, please edit me">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="actid"/>
-        <FIELD NAME="actid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="scaffold"/>
-        <FIELD NAME="scaffold" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="actid" NEXT="template"/>
-        <FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="scaffold" NEXT="datamode"/>
-        <FIELD NAME="datamode" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="template" NEXT="page"/>
-        <FIELD NAME="page" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="datamode" NEXT="showsave"/>
-        <FIELD NAME="showsave" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="page"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="actid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="scaffold" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="datamode" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="page" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="showsave" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -35,42 +35,43 @@
         <INDEX NAME="actid" UNIQUE="true" FIELDS="actid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="portfolioact_tmpl_pages" COMMENT="The pages for the template" PREVIOUS="portfolioact_tmpl_settings" NEXT="portfolioact_tmpl_items">
+    <TABLE NAME="portfolioact_tmpl_pages" COMMENT="The pages for the template">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="template"/>
-        <FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="name" NEXT="itemorder"/>
-        <FIELD NAME="itemorder" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="template"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="itemorder" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="portfolioact_tmpl_items" COMMENT="Default comment for the table, please edit me" PREVIOUS="portfolioact_tmpl_pages" NEXT="portfolioact_tmpl_entries">
+    <TABLE NAME="portfolioact_tmpl_items" COMMENT="Default comment for the table, please edit me">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="page"/>
-        <FIELD NAME="page" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="page" NEXT="type"/>
-        <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="settings"/>
-        <FIELD NAME="settings" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="type" NEXT="reference"/>
-        <FIELD NAME="reference" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="settings"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="page" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="settings" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="reference" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="portfolioact_tmpl_entries" COMMENT="User data for items" PREVIOUS="portfolioact_tmpl_items">
+    <TABLE NAME="portfolioact_tmpl_entries" COMMENT="User data for items">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="itemid"/>
-        <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="itemid" NEXT="actid"/>
-        <FIELD NAME="actid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="userid" NEXT="entry"/>
-        <FIELD NAME="entry" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" PREVIOUS="actid" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="entry"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="actid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="entry" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="itemanduser"/>
-        <KEY NAME="itemanduser" TYPE="unique" FIELDS="itemid, userid, actid" PREVIOUS="primary"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="itemanduser" TYPE="unique" FIELDS="itemid, userid, actid"/>
       </KEYS>
     </TABLE>
   </TABLES>

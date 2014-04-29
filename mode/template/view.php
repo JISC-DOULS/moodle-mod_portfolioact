@@ -47,8 +47,11 @@ function portfolioactmode_template_view($subplug) {
     global $PAGE, $CFG, $OUTPUT;
 
     $page = optional_param('page', 0, PARAM_INT);
+    if ($page) {
+        $PAGE->set_url(qualified_me(), array('page' => $page));
+    }
 
-    $context = get_context_instance(CONTEXT_MODULE, $subplug->cm->id);
+    $context = context_module::instance($subplug->cm->id);
     require_capability('mod/portfolioact:canview', $context );
 
     $templateid = $subplug->settings->template;
@@ -64,6 +67,8 @@ function portfolioactmode_template_view($subplug) {
         echo $OUTPUT->footer();
         exit;
     }
+
+    $PAGE->requires->css(new moodle_url('/mod/portfolioact/mode/template/styles.css'));
 
     $savetypes = $subplug->get_allowed_save_types();
     $pages = $template->get_pages();
@@ -110,7 +115,10 @@ function portfolioactmode_template_view($subplug) {
         $class = "portfolioact_template_item_".$item->type;
         $item->object =   new $class($item->id);
 
-        $form->formhandle->addElement('header', 'item' . $item->id, '');
+        if (!empty($item->title)) {
+            $form->formhandle->addElement('header', 'item' . $item->id, $item->title);
+            $form->formhandle->setExpanded('item' . $item->id, true);
+        }
 
         if (($subplug->settings->datamode == 0) || ($item->type == 'instruction') ) {//activity mode
             $item->object->display($form, $subplug->settings->actid );
@@ -133,10 +141,13 @@ function portfolioactmode_template_view($subplug) {
         if (!in_array($item->typecheck, portfolioact_template_item::$readonly)) {
             $showsave = true;
         }
+        if (!empty($item->title)) {
+            $form->formhandle->addElement('static', 'endhead' . $item->id, '');
+            $form->formhandle->closeHeaderBefore('endhead' . $item->id);
+        }
 
     }
     if ($showsave) {
-        $form->formhandle->addElement('header', 'saveitems', '');
         //add the save button
         $form->formhandle->addElement('submit', 'submitbutton', get_string('saveitems',
             'portfolioactmode_template'));

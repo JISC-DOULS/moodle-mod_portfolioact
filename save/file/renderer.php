@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class mod_portfolioact_filesave_renderer extends plugin_renderer_base {
+class portfolioactsave_file_renderer extends plugin_renderer_base {
 
     /**
      * Returns the html for the save button

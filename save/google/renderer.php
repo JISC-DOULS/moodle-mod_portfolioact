@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class mod_portfolioact_googlesave_renderer extends plugin_renderer_base {
+class portfolioactsave_google_renderer extends plugin_renderer_base {
 
     /**
      * Returns the html for the save button

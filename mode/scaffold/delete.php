@@ -42,7 +42,7 @@ $scaffoldid = required_param('scaffold', PARAM_INT);
 $scaffold_plugin = new portfolioact_mode_scaffold();
 $scaffold = new portfolioact_scaffold($scaffoldid);
 
-$context = get_context_instance(CONTEXT_MODULE, $scaffold_plugin->cm->id);
+$context = context_module::instance($scaffold_plugin->cm->id);
 require_capability('portfolioactmode/scaffold:editscaffolds', $context );
 
 $url = new moodle_url('/mod/portfolioact/mode/scaffold/delete.php',

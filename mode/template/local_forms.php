@@ -77,7 +77,7 @@ class portfolioact_template_edit_form extends moodleform {
      */
     public function definition() {
         $mform  = $this->_form;
-
+        $mform->disable_form_change_checker();
     }
 
     /**
@@ -131,6 +131,7 @@ class portfolioact_template_edit_confirm_form extends moodleform {
         global $DB;
         $mform2 = $this->_form;
         $mform2->addElement('hidden', 'saveddata');
+        $mform2->setType('saveddata', PARAM_RAW);
         $this->add_action_buttons(get_string('cancel'),
             get_string('absolutelyconfirm', 'portfolioactmode_template'));
     }
@@ -197,6 +198,7 @@ class portfolioact_template_update_position extends moodleform {
     public function definition() {
         $mform  = $this->_form;
         $pageorderfield = $mform->addElement('hidden', 'pageorderlist');
+        $mform->setType('pageorderlist', PARAM_RAW);
         $pageorderfield->setAttributes(array('id'=>'pageorderlist',
             'name'=>'pageorderlist', 'type'=>'hidden', 'value'=>''));
 
@@ -236,6 +238,7 @@ class portfolioact_template_update_items_position extends moodleform {
     public function definition() {
         $mform  = $this->_form;
         $pageorderfield = $mform->addElement('hidden', 'itemorderlist');
+        $mform->setType('itemorderlist', PARAM_RAW);
         $pageorderfield->setAttributes(array('id'=>'itemorderlist',
             'name'=>'itemorderlist', 'type'=>'hidden', 'value'=>''));
 

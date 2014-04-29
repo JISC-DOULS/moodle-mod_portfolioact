@@ -14,16 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
+ * Subplugin info class.
  *
- * @package portfolioact
- * @subpackage portfolioactmode_template
- * @copyright 2011 The Open University
+ * @package mod_portfolioact
+ * @copyright 2014 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_portfolioact\plugininfo;
+
+use core\plugininfo\base;
 
 defined('MOODLE_INTERNAL') || die();
 
-//$module->version  = 0;           // If version == 0 then module will not be installed
-$plugin->version  = 2011071804;   // The current module version (Date: YYYYMMDDXX)
+
+class portfolioactmode extends base {
+}

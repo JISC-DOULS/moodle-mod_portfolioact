@@ -39,7 +39,7 @@ global $CFG;
 
 $portfolioacttemplate = new portfolioact_mode_template();
 
-$context = get_context_instance(CONTEXT_MODULE, $portfolioacttemplate->cm->id);
+$context = context_module::instance($portfolioacttemplate->cm->id);
 require_capability('portfolioactmode/template:edittemplates', $context );
 
 $url = new moodle_url('/mod/portfolioact/mode/template/addtemplate.php',

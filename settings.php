@@ -24,8 +24,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/locallib.php');
-
 // include the settings of mode subplugins
 $plugs = get_plugin_list('portfolioactmode');
 foreach ($plugs as $plugin => $path) {

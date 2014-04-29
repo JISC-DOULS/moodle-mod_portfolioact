@@ -46,7 +46,7 @@ $page = new portfolioact_template_page($pageid);
 $template = new portfolioact_template($templateid);
 $page =  new portfolioact_template_page($pageid);
 
-$context = get_context_instance(CONTEXT_MODULE, $portfolioacttemplate->cm->id);
+$context = context_module::instance($portfolioacttemplate->cm->id);
 require_capability('portfolioactmode/template:edittemplates', $context );
 
 $url = new moodle_url('/mod/portfolioact/mode/template/pageeditor.php',

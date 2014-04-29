@@ -40,6 +40,7 @@ padding: 10px;
 }
 .portfolioact-template-templateform #saveitems {border-bottom: 1px solid #000000; }
 .portfolioact-template-templateform div.fitem div.felement {margin-left: 0px; }
+.ie .portfolioact-template-templateform div.fitem div.felement {margin-left: 0px; }
 .portfolioact-template-templateform div.fitem > div.fitemtitle {width: auto; }
 .portfolioact-template-template-instruction {margin-bottom: 1em; }
 .portfolioact-template-template-question { }

@@ -32,15 +32,24 @@ class mod_portfolioact_renderer extends plugin_renderer_base {
      * @param $cmid;
      * @param boolean $canedit
      * @param string $mode
+     * @param int $courseid
+     * @param mod_portfolioact_renderer $renderer
      * @return string
      */
 
-    public function render_portfolioactmode_notyetsetup($cmid, $canedit, $mode) {
+    public function render_portfolioactmode_notyetsetup($cmid, $canedit, $mode, $courseid, $renderer) {
 
         $string = html_writer::tag('p', get_string('notyetsetup',
                 'portfolioact') );
 
         if ($canedit) {
+            // Check if any existing templates/scaffolds - if not send to manager to create.
+            $func = "portfolioactmode_{$mode}_get_{$mode}s";
+            $result = $func($courseid);
+            if (empty($result)) {
+                $func = "render_portfolioactmode_{$mode}_no{$mode}smessage";
+                return $renderer->$func($cmid);
+            }
             $url = new moodle_url('/mod/portfolioact/mode/'.$mode.'/edit'.$mode.'.php',
                 array('id'=>$cmid));
             $edit = get_string('setitup', 'portfolioact');

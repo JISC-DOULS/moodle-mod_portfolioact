@@ -46,6 +46,21 @@ function xmldb_portfolioactmode_template_upgrade($oldversion = 0) {
 
     $dbman = $DB->get_manager();
 
+    if ($oldversion < 2013081400) {
+
+        // Define field title to be added to portfolioact_tmpl_items.
+        $table = new xmldb_table('portfolioact_tmpl_items');
+        $field = new xmldb_field('title', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'name');
+
+        // Conditionally launch add field title.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Template savepoint reached.
+        upgrade_plugin_savepoint(true, 2013081400, 'portfolioactmode', 'template');
+    }
+
     $result = true;
 
     return $result;

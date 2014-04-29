@@ -49,7 +49,7 @@ require_login($course, false, $cm);
 
 $subplug = portfolioact_save::get_export_module($savetype, $actid, $cm->id);
 
-$context = get_context_instance(CONTEXT_MODULE, $PAGE->cm->id);
+$context = context_module::instance($PAGE->cm->id);
 
 require_capability('mod/portfolioact:canview', $context );
 
@@ -71,7 +71,7 @@ if ($savetype == 'google') {
     $modetype = portfolioact_mode::get_plugin_mode($actid);
 
     $ajaxenabled = ajaxenabled() && !$noajax;
-
+    $PAGE->requires->css(new moodle_url('/mod/portfolioact/save/google/styles.css'));
     echo $subplug->renderer->header();
     echo $subplug->renderer->render_page_header();
 
@@ -90,7 +90,7 @@ if ($savetype == 'google') {
     // Get OAuth authorisation credentials - use standard portfolio options
     $clientid = '';
     $secret = '';
-    if ($record = $DB->get_record('portfolio_instance', array('plugin' => 'googledocs', 'visible' => 1))) {
+    if ($record = $DB->get_record('portfolio_instance', array('plugin' => 'googledocs'))) {
         $id = $record->id;
         if ($configs = $DB->get_records('portfolio_instance_config', array('instance' => $id))) {
             foreach ($configs as $config) {
@@ -248,7 +248,9 @@ if ($savetype == 'file') {
                 'Save zip', $cm->id);
             send_file($subplug->immediateoutput['fullpath'],
                 $subplug->immediateoutput['filename'], 1,
-                0, false, true);
+                0, false, true, '', true);
+            unlink($subplug->immediateoutput['fullpath']);
+            die();
         } else if (isset($subplug->immediateoutput['filedata'])) {
              add_to_log($course->id, 'portfolioact', 'save', "save.php?id=" . $cm->id,
                 'Save file', $cm->id);

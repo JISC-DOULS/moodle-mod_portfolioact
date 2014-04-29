@@ -43,7 +43,7 @@ $scaffold_plugin = new portfolioact_mode_scaffold();
 
 require_once($CFG->dirroot.'/mod/portfolioact/mode/scaffold/db/access.php');
 
-$context = get_context_instance(CONTEXT_MODULE, $scaffold_plugin->cm->id);
+$context = context_module::instance($scaffold_plugin->cm->id);
 require_capability('portfolioactmode/scaffold:editscaffolds', $context );
 
 $url = new moodle_url('/mod/portfolioact/mode/scaffold/manager.php',

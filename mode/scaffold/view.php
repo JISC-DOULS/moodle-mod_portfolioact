@@ -48,13 +48,13 @@ if (! defined('PORTFOLIOACTVIEWER')) {
 
 function portfolioactmode_scaffold_view($subplug) {
 
-    global $OUTPUT;
+    global $OUTPUT, $PAGE;
 
-    $context = get_context_instance(CONTEXT_MODULE, $subplug->cm->id);
+    $context = context_module::instance($subplug->cm->id);
     require_capability('mod/portfolioact:canview', $context );
 
     $scaffoldid = $subplug->settings->scaffold;
-
+    $PAGE->requires->css(new moodle_url('/mod/portfolioact/mode/template/styles.css'));
     echo $OUTPUT->header();
     echo $subplug->renderer->render_portfolioactmode_scaffold_viewhead($subplug);
 

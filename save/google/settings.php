@@ -26,10 +26,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$choices = array(
+        0 => get_string('save_disabled', 'portfolioact'),
+        1 => get_string('save_enabled', 'portfolioact'),
+        2 => get_string('save_force', 'portfolioact')
+);
+
 $settings->add(new admin_setting_configselect('portfolioactsave_google/google_enabled',
     get_string('enabled', 'portfolioactsave_google'),
-    get_string('enabled_desc', 'portfolioact'), portfolioact_save::TYPE_ENABLED,
-    portfolioact_save::save_type_settings_choice()
+    get_string('enabled_desc', 'portfolioact'), 1, $choices
     ));
 
 $settings->add(new admin_setting_configtext('portfolioactsave_google/google_domain',

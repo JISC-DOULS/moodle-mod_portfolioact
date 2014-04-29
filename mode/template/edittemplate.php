@@ -41,7 +41,7 @@ $newtemplateid = optional_param('newtemplateid', null, PARAM_INT);
 $portfolioacttemplate = new portfolioact_mode_template();
 $templates = portfolioactmode_template_get_templates($portfolioacttemplate->course->id, 'name');
 
-$context = get_context_instance(CONTEXT_MODULE, $portfolioacttemplate->cm->id);
+$context = context_module::instance($portfolioacttemplate->cm->id);
 require_capability('portfolioactmode/template:edittemplates', $context );
 
 $url = new moodle_url('/mod/portfolioact/mode/template/edittemplate.php',

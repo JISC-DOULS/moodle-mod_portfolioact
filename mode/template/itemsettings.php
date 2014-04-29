@@ -46,7 +46,7 @@ $portfolioacttemplate = new portfolioact_mode_template();
  $page = new portfolioact_template_page($pageid);
 
 
-$context = get_context_instance(CONTEXT_MODULE, $portfolioacttemplate->cm->id);
+$context = context_module::instance($portfolioacttemplate->cm->id);
 require_capability('portfolioactmode/template:edittemplates', $context );
 
 $url = new moodle_url('/mod/portfolioact/mode/template/itemsettings.php',
@@ -73,6 +73,7 @@ $settingsdata = array();
 
 if ($new == 1) {
     $name = '';
+    $title = '';
     $type = required_param('contenttype', PARAM_ALPHAEXT);
     $itemafter = required_param('itemafter', PARAM_TEXT);
     $contenttype = required_param('contenttype', PARAM_ALPHAEXT);
@@ -88,6 +89,7 @@ if ($new == 1) {
 
     $type = $item->type;
     $name = $item->name;
+    $title = $item->title;
     $settingsdata = $item->settingskeys;
 }
 //the settings
@@ -131,6 +133,13 @@ $settingsform->formhandle->addRule('itemname', get_string('maximumchars', '', 25
 $settingsform->formhandle->addRule('itemname', get_string('required'), 'required', null, 'client');
 $settingsform->formhandle->addHelpButton('itemname', 'itemnametype', 'portfolioactmode_template');
 
+$titleattributes = array('value' => $title);
+$titlefield = $settingsform->formhandle->addElement('text', 'itemtitle', get_string('itemtitle',
+        'portfolioactmode_template'), $titleattributes);
+
+$settingsform->formhandle->addRule('itemtitle', get_string('maximumchars', '', 250), 'maxlength',
+        250, 'client');
+$settingsform->formhandle->addHelpButton('itemtitle', 'itemtitletype', 'portfolioactmode_template');
 
 //for new ones we transfer these fields from the incomming form data via params (the form
 //on the previous page) to hidden fields in this form, so they are available when
@@ -177,8 +186,10 @@ foreach ($settings as $setting => $controldetails) {
             }
             $settingsform->formhandle->addHelpButton($setting . '_editor', $controldetails['helptextstring'],
                 'portfolioactmode_template');
-            $settingsform->formhandle->addRule($setting . '_editor',
-                get_string('required'), 'required', null, 'client');
+            if (isset($controldetails['required']) && $controldetails['required'] === true) {
+                $settingsform->formhandle->addRule($setting . '_editor',
+                    get_string('required'), 'required', null, 'client');
+            }
 
 
         break;
@@ -264,12 +275,13 @@ if ($settingsform->is_cancelled() ) {
 if ($fromform=$settingsform->get_data()) {
 
         $newname = $fromform->itemname;
+        $newtitle = $fromform->itemtitle;
         $settings = array();
     foreach ($fromform as $fieldname => $fieldvalue) {
             //lose the fields not custom for this control type
         if ( ($fieldname == 'itemname') || ($fieldname == 'submitbutton') ||
                 ($fieldname == 'itemafter') || ($fieldname == 'contenttype') ||
-                    ($fieldname == 'new') ) {
+                    ($fieldname == 'new') || ($fieldname == 'itemtitle')) {
                  continue;
         }
             //straightforward string case
@@ -296,7 +308,7 @@ if ($fromform=$settingsform->get_data()) {
         }
 
         $class = 'portfolioact_template_item_'.$type;
-        $res = $class::create_element($pageid, $type, $newname, $settings,
+        $res = $class::create_element($pageid, $type, $newname, $newtitle, $settings,
                 $itemafter, false );
 
         if ($res === false) {
@@ -315,7 +327,7 @@ if ($fromform=$settingsform->get_data()) {
 
         $class = "portfolioact_template_item_".$type;
         $item = new $class($itemid);
-        $res = $item->update_element($newname, $settings );
+        $res = $item->update_element($newname, $settings, $newtitle);
 
         if ($res === false) {
             $url = new moodle_url('/mod/portfolioact/mode/template/pageeditor.php',

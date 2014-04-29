@@ -50,7 +50,7 @@ class portfolioact_google_save extends portfolioact_save_plugin {
 
     protected function __construct($actid, $cmid) {
         global $PAGE;
-        $this->renderer = $PAGE->get_renderer('mod_portfolioact_googlesave');
+        $this->renderer = $PAGE->get_renderer('portfolioactsave_google');
         $this->actid = $actid;
         $this->cmid = $cmid;
         parent::__construct($actid, $cmid);
@@ -349,7 +349,7 @@ class portfolioact_google_save extends portfolioact_save_plugin {
     public function get_google_link() {
         $link = 'http://docs.google.com';
         //If domain config is set direct specifically to that
-        $context = get_context_instance(CONTEXT_MODULE, $this->cmid);
+        $context = context_module::instance($this->cmid);
         $domain = get_config('portfolioactsave_google', 'google_domain');
         if ($domain != '' &&
             !has_capability('portfolioactsave/google:anydomain', $context)) {

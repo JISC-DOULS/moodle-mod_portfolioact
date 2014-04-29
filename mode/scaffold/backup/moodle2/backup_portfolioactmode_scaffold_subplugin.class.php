@@ -55,7 +55,7 @@ class backup_portfolioactmode_scaffold_subplugin extends backup_subplugin {
         $subplugin_table_settings->set_source_table('portfolioact_scaff_settings', array('actid' => backup::VAR_ACTIVITYID));
         $subplugin_table_scaffolds->set_source_table('portfolioact_scaffolds', array('id' => '../scaffold'));
 
-        $context = get_context_instance(CONTEXT_COURSE, $this->task->get_courseid());
+        $context = context_course::instance($this->task->get_courseid());
 
         $subplugin_table_scaffolds->annotate_files('portfolioactmode_scaffold', 'scaffoldset', 'id', $context->id);
 

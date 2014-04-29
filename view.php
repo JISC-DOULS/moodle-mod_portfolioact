@@ -46,7 +46,7 @@ $PAGE->set_button(update_module_button($subplug->cm->id, $subplug->course->id,
 get_string('modulename', 'portfolioact')));
 
 
-$context = get_context_instance(CONTEXT_MODULE, $subplug->cm->id);
+$context = context_module::instance($subplug->cm->id);
 $canedit = has_capability('mod/portfolioact:canedit', $context );
 
 
@@ -73,7 +73,7 @@ if (empty($subplug->settings)  ) {
 
 
     echo $subplug->pa_renderer->render_portfolioactmode_notyetsetup($subplug->cm->id,
-    $canedit, $mode);
+            $canedit, $mode, $subplug->course->id, $subplug->renderer);
     echo $OUTPUT->footer();
     exit;
 }

@@ -212,7 +212,7 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
         //Use moodle select instead
         list($in_sql, $in_params) = $DB->get_in_or_equal($itemsintemplate);
         $items = $DB->get_records_select('portfolioact_tmpl_items', "id $in_sql",
-            $in_params, '', 'id, name, type, settings, reference');
+            $in_params, '', 'id, name, title, type, settings, reference');
 
         if (empty ($items)) {
             //no data to export
@@ -371,10 +371,12 @@ class portfolioact_mode_template extends portfolioact_mode_plugin {
 
                 if ($settingskeys['savewithexport'] == 1) {
                     $outputline = '';
-                    $outputline = format_text($settingskeys['questiontext'], FORMAT_HTML,
-                        $formatoptions);
                     if (method_exists($itemclass, 'format_question_for_export')) {
-                        $outputline = $itemclass::format_question_for_export($outputline, $items[$itemid], $actid);
+                        $outputline = $itemclass::format_question_for_export($settingskeys['questiontext'], $items[$itemid], $actid);
+                    }
+                    $outputline = format_text($outputline, FORMAT_HTML, $formatoptions);
+                    if (!empty($items[$itemid]->title)) {
+                        $outputline = $r->heading($items[$itemid]->title) . $outputline;
                     }
                     if (  (isset($items[$itemid]->entry)) ) {
                         $outputline.= format_text($items[$itemid]->entry, FORMAT_HTML,
@@ -1128,6 +1130,7 @@ abstract class  portfolioact_template_item {
     static public $readonly = array('instruction', null);// Types that don't save, always inc null.
     protected $id;
     protected $name;
+    protected $title;
     protected $pageid;
     protected $settings;
     protected $settingskeys;
@@ -1152,6 +1155,7 @@ abstract class  portfolioact_template_item {
         //false if no record
         $this->id = $data->id;
         $this->name = $data->name;
+        $this->title = $data->title;
         $this->pageid = $data->page;
         $this->type = $data->type;
         $this->settings = $data->settings;
@@ -1272,8 +1276,8 @@ abstract class  portfolioact_template_item {
      * @return mixed an object of the type or just true if
      * object not required or false on failure
      */
-    public static function create_element($pageid, $type, $name,
-    $settings = array(), $itemafter = null) {
+    public static function create_element($pageid, $type, $name, $title = '',
+            $settings = array(), $itemafter = null) {
 
         //TODO make this a transaction
         //TODO check $type in $items
@@ -1283,9 +1287,15 @@ abstract class  portfolioact_template_item {
         $newitem->name = $name;
         $newitem->page =  $pageid;
         $newitem->type =  $type;
+        $newitem->title = $title;
         $class = get_called_class();
 
-        $settings['savewithexport'] = $class::savewithexport($settings);
+        if (!empty($settings['sourceitem'])) {
+            // Reference item, set field and ignore export saving.
+            $newitem->reference = $settings['sourceitem'];
+        } else {
+            $settings['savewithexport'] = $class::savewithexport($settings);
+        }
 
         //the backup xml_writer class xml_site_utf8 method
         //replaces crlf with lf which breaks the serialisation
@@ -1351,7 +1361,7 @@ abstract class  portfolioact_template_item {
         if (!empty($settings['itemid'])) {
             $itemclass = "portfolioact_template_item_".$type;
             $obj = new $itemclass($itemid);
-            return $obj->update_element($name, $settings);
+            return $obj->update_element($name, $settings, $title);
         } else {
             return true;
         }
@@ -1396,7 +1406,7 @@ abstract class  portfolioact_template_item {
      */
 
 
-    public function update_element($name, $settings = array()) {
+    public function update_element($name, $settings = array(), $title = '') {
         global $PAGE;
         if (!empty($settings['questiontext']) && !empty($settings['itemid'])) {
             // Add file bits.
@@ -1419,6 +1429,11 @@ abstract class  portfolioact_template_item {
         $item = new stdClass;
         $item->id = $this->id;
         $item->name = $name;
+        $item->title = $title;
+        if (isset($settings['sourceitem'])) {
+            // Set reference to reference.
+            $item->reference = $settings['sourceitem'];
+        }
 
         $class = get_class($this);
         $settings['savewithexport'] = $class::savewithexport($settings);
@@ -1645,7 +1660,7 @@ portfolioact_template_item {
                  'defaultvalue'=>'', 'label'=>get_string('itemlargetextlabel',
                  'portfolioactmode_template'), 'helptextstring'=>'itemlargetextassist',
                  'helptextfile'=>'portfolioactmode_template',
-                 'filearea' => 'instruction'),
+                 'filearea' => 'instruction', 'required' => true),
                  'displaysavestatus'=>array('control'=>'select',
                  'defaultvalue'=>'0',
              'values'=>array('0'=>get_string('showandsave', 'portfolioactmode_template'),
@@ -1736,10 +1751,9 @@ portfolioact_template_item {
         $form = &$form->formhandle;
         $instructiontext = $this->settingskeys['questiontext'];
         $instructiontext = self::substitute_codes($instructiontext, $actid);
+        $instructiontext = $this->format_question_for_display($instructiontext);
         $instructiontext = format_text($instructiontext,
             FORMAT_HTML, $this->formatoptions);
-
-        $instructiontext = $this->format_question_for_display($instructiontext);
 
         if (! is_null($id)) {
             $uniquename = "item_".$id;
@@ -1934,13 +1948,14 @@ class  portfolioact_template_item_text extends portfolioact_template_item {
         }
 
         $question_text = $this->settingskeys['questiontext'];
+        $question_text = $this->format_question_for_display($question_text);
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
 
-        $question_text = $this->format_question_for_display($question_text);
-
-        $form->formhandle->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
-        ($question_text));
+        if (!empty($question_text)) {
+            $form->formhandle->addElement('html',
+                    $this->renderer->render_portfolioactmode_template_textlabel($question_text));
+        }
 
         if ($this->settingskeys['htmlformat'] == 1) {
             // Add image upload support.
@@ -2094,11 +2109,14 @@ class  portfolioact_template_item_numeric extends portfolioact_template_item {
 
         $question_text = $this->settingskeys['questiontext'];
 
+        $question_text = $this->format_question_for_display($question_text);
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
-        $question_text = $this->format_question_for_display($question_text);
-        $form->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
-        ( $question_text));
+
+        if (!empty($question_text)) {
+            $form->addElement('html',
+                    $this->renderer->render_portfolioactmode_template_textlabel($question_text));
+        }
 
         $field = $form->addElement('text', $uniquename,
             '', null);
@@ -2212,12 +2230,14 @@ class  portfolioact_template_item_duration extends portfolioact_template_item {
         }
 
         $question_text = $this->settingskeys['questiontext'];
-
+        $question_text = $this->format_question_for_display($question_text);
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
-        $question_text = $this->format_question_for_display($question_text);
-        $form->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
-        ($question_text));
+
+        if (!empty($question_text)) {
+            $form->addElement('html',
+                    $this->renderer->render_portfolioactmode_template_textlabel($question_text));
+        }
 
         $field = $form->addElement('duration', $uniquename,
             '', array('optional' => false));
@@ -2425,13 +2445,14 @@ class  portfolioact_template_item_datepicker extends portfolioact_template_item 
         }
 
         $question_text = $this->settingskeys['questiontext'];
-
+        $question_text = $this->format_question_for_display($question_text);
         $question_text = format_text($question_text,
             FORMAT_HTML, $this->formatoptions);
-        $question_text = $this->format_question_for_display($question_text);
 
-         $form->addElement('html', $this->renderer->render_portfolioactmode_template_textlabel
-        ($question_text));
+        if (!empty($question_text)) {
+            $form->addElement('html',
+                    $this->renderer->render_portfolioactmode_template_textlabel($question_text));
+        }
         $stopyear = gmdate("Y") + 15;
 
         $datepicker = $form->addElement('date_selector', $uniquename, '', array('startyear'=>1920,
@@ -2685,133 +2706,17 @@ class  portfolioact_template_item_reference extends portfolioact_template_item {
      * object not required or false on failure
      */
 
-    public static function create_element($pageid, $type, $name,
-    $settings = null, $itemafter = null, $objectrequired = false) {
-        //TODO make this a transaction
-        //TODO check $type in $items
+    public static function create_element($pageid, $type, $name, $title = '',
+            $settings = null, $itemafter = null) {
         global $DB;
-        $newitem = new stdClass;
-        $newitem->id = null;
-        $newitem->name = $name;
-        $newitem->page =  $pageid;
-        $newitem->type =  $type;
 
         if (empty($settings) ||  (! isset($settings['sourceitem']))) {
-            throw new coding_exception
-            ('Should not be trying to create a reference item without a source item');
-        }
-        $newitem->reference = $settings['sourceitem'];
-
-        //$settings is an array of setting name => value pairs
-        //the backup xml_writer class xml_site_utf8 method
-        //replaces crlf with lf which breaks the serialisation
-        //so we just remove any cr's here
-        if (isset($settings['questiontext'])) {
-            $settings['questiontext'] = preg_replace("/\r\n|\r/", "\n", $settings['questiontext']);
-        }
-        $newitem->settings = portfolioactmode_template_settingskeys_in($settings);
-        $itemid = $DB->insert_record('portfolioact_tmpl_items', $newitem);
-
-        //add it to the end of the position order
-        $rec = $DB->get_record('portfolioact_tmpl_pages',
-        array('id'=>$pageid), 'itemorder');
-        $itemorder = $rec->itemorder;
-        $page = new stdClass;
-        $page->id =  $pageid;
-        //this is the first one in the index so it will be last/first anyway what ever was
-        //passed in
-        if (is_null($itemorder ) || ($itemorder === "")) {
-            $page->itemorder = $itemid;
-        } else {//we have an index already
-
-            if (! is_null($itemafter)) {
-                //code to insert it in correct position
-
-                if ($itemafter == 'start') {//specialcase
-
-                    $currentidx = explode(",", $itemorder);
-                    array_unshift($currentidx, $itemid);
-                    $page->itemorder = implode(",", $currentidx);
-                } else if ($itemafter == 'end') {
-                    $currentidx = explode(",", $itemorder);
-                    array_push($currentidx, $itemid);
-                    $page->itemorder = implode(",", $currentidx);
-
-                } else {
-                    $currentidx = explode(",", $itemorder);
-                    $pos = array_search($itemafter, $currentidx );
-
-                    if ($pos !== false) {
-                        $pos++;
-                        array_splice($currentidx, $pos, 0, $itemid  );
-                        $page->itemorder = implode(",", $currentidx);
-                    } else {
-                        //we didn't find it (another user has changed the index)
-                        //because we can't leave the transaction unfinished and
-                        //we don't want to issue our own rollback we are not using
-                        //transactions here.
-                        return false;
-                    }
-                }
-
-            } else { //the position for the new item was not
-                //specified - put it at end
-                $page->itemorder = $itemorder . "," . $itemid;//add it at the end
-            }
+            throw new moodle_exception('Should not be trying to create a reference item without a source item');
         }
 
-        $DB->update_record('portfolioact_tmpl_pages', $page);
-
-        if ($objectrequired) {
-            $itemclass = "portfolioact_template_item_".$type;
-            $obj = new $itemclass($itemid);
-            return $obj;
-        } else {
-            return true;
-        }
+        return parent::create_element($pageid, $type, $name, $title, $settings, $itemafter);
 
     }
-
-
-    /**
-     * Updates an item name and settings
-     *
-     * In this method which over-rides its parent class one we additionally
-     * put the source item id in the reference column.
-     *
-     * @param string $name
-     * @param mixed $settings
-     * @return boolean
-     */
-
-    public function update_element($name, $settings = array()) {
-
-        $item = new stdClass;
-        $item->id = $this->id;
-        $item->name = $name;
-        $item->reference = $settings['sourceitem'];
-
-        if (empty($settings) ||  (! isset($settings['sourceitem']))) {
-            throw new coding_exception
-            ('Should not be trying to create a reference item without a source item');
-        }
-
-        //$settings is an array of setting name => value pairs
-        //the backup xml_writer class xml_site_utf8 method
-        //replaces crlf with lf which breaks the serialisation
-        //so we just remove any cr's here
-        if (isset($settings['questiontext'])) {
-            $settings['questiontext'] = preg_replace("/\r\n|\r/", "\n", $settings['questiontext']);
-        }
-        if (! is_null($settings)) {
-            $item->settings = portfolioactmode_template_settingskeys_in($settings);
-        }
-
-        $res = $this->DB->update_record("portfolioact_tmpl_items", $item);
-
-        return $res;
-    }
-
 
     /**
      * Saves the data for this type of control
@@ -2862,8 +2767,7 @@ class  portfolioact_template_item_reference extends portfolioact_template_item {
 
     public static function savewithexport($settings) {
 
-        throw new coding_exception
-        ("Not allowed attempt to call savewithexport() on a reference item");
+        return 0;
 
     }
 
