@@ -70,7 +70,7 @@ if ($savetype == 'google') {
 
     $modetype = portfolioact_mode::get_plugin_mode($actid);
 
-    $ajaxenabled = ajaxenabled() && !$noajax;
+    $ajaxenabled = !$noajax;
     $PAGE->requires->css(new moodle_url('/mod/portfolioact/save/google/styles.css'));
     echo $subplug->renderer->header();
     echo $subplug->renderer->render_page_header();
@@ -214,8 +214,14 @@ if ($savetype == 'google') {
         array($actid, $modetype, $cmid, 'google'), true, portfolioactsave_google_get_js_module());
     }
 
-    add_to_log($course->id, 'portfolioact', 'save', "save.php?id=" . $cm->id,
-        'Export to Google', $cm->id);
+    $params = array(
+            'context' => $context,
+            'objectid' => $cm->instance,
+            'other' => array('action' => 'Export to Google')
+    );
+    $event = \mod_portfolioact\event\content_exported::create($params);
+    $event->trigger();
+
     echo $subplug->renderer->footer();
 
 
@@ -244,17 +250,27 @@ if ($savetype == 'file') {
     if (isset($subplug->immediateoutput)) {
         if (isset($subplug->immediateoutput['fullpath'])) {
 
-            add_to_log($course->id, 'portfolioact', 'save', "save.php?id=" . $cm->id,
-                'Save zip', $cm->id);
+            $params = array(
+                'context' => $context,
+                'objectid' => $cm->instance,
+                'other' => array('action' => 'Save zip')
+            );
+            $event = \mod_portfolioact\event\content_exported::create($params);
+            $event->trigger();
             send_file($subplug->immediateoutput['fullpath'],
                 $subplug->immediateoutput['filename'], 1,
                 0, false, true, '', true);
             unlink($subplug->immediateoutput['fullpath']);
             die();
         } else if (isset($subplug->immediateoutput['filedata'])) {
-             add_to_log($course->id, 'portfolioact', 'save', "save.php?id=" . $cm->id,
-                'Save file', $cm->id);
-             send_file($subplug->immediateoutput['filedata'],
+            $params = array(
+                'context' => $context,
+                'objectid' => $cm->instance,
+                'other' => array('action' => 'Save file')
+            );
+            $event = \mod_portfolioact\event\content_exported::create($params);
+            $event->trigger();
+            send_file($subplug->immediateoutput['filedata'],
                 $subplug->immediateoutput['filename'], 1,  0, true, true);
 
         } else {

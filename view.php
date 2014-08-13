@@ -36,7 +36,6 @@ $cm = get_coursemodule_from_id('portfolioact', $id, 0, false, MUST_EXIST);
 $mode = portfolioact_mode::get_plugin_mode($cm->instance);
 $subplug = portfolioact_mode::get_mode_instance($cm->instance, $mode);
 
-//add_to_log($subplug->course->id, 'portfolioact', 'view', "view.php?id=" . $subplug->cm->id,
 
 
 $PAGE->set_url('/mod/portfolioact/view.php', array('id' => $subplug->cm->id));
@@ -99,5 +98,11 @@ $func($subplug);
 
 // Finish the page
 echo $OUTPUT->footer();
-add_to_log($subplug->course->id, 'portfolioact', 'view', "view.php?id=" . $subplug->cm->id,
-    'Mode: ' . $mode, $subplug->cm->id);
+
+$params = array(
+        'context' => $context,
+        'objectid' => $cm->instance,
+        'other' => array('mode' => $mode)
+);
+$event = \mod_portfolioact\event\course_module_viewed::create($params);
+$event->trigger();

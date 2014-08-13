@@ -88,36 +88,6 @@ function portfolioact_update_instance($portfolioact) {
     return $DB->update_record('portfolioact', $portfolioact);
 }
 
-
-
-/**
- * Return a small object with summary information about what a
- * user has done with a given particular instance of this module
- * Used for user activity reports.
- * $return->time = the time they did it
- * $return->info = a short text description
- *
- * @return null
- * @todo Finish documenting this function
- */
-function portfolioact_user_outline($course, $user, $mod, $portfolioact) {
-    $return = new stdClass;
-    $return->time = 0;
-    $return->info = '';
-    return $return;
-}
-
-/**
- * Print a detailed representation of what a user has done with
- * a given particular instance of this module, for user activity reports.
- *
- * @return boolean
- * @todo Finish documenting this function
- */
-function portfolioact_user_complete($course, $user, $mod, $portfolioact) {
-    return true;
-}
-
 /**
  * Given a course and a time, this module should find recent activity
  * that has occurred in portfolioact activities and print it out.

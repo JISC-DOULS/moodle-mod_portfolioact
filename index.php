@@ -39,7 +39,11 @@ if (! $course = $DB->get_record('course', array('id' => $id))) {
 
 require_course_login($course);
 
-add_to_log($course->id, 'portfolioact', 'view all', "index.php?id=$course->id", '');
+$event = \mod_portfolioact\event\course_module_instance_list_viewed::create(array(
+    'context' => context_course::instance($id)
+));
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 /// Print the header
 
@@ -64,6 +68,7 @@ $timenow  = time();
 $strname  = get_string('name');
 $strweek  = get_string('week');
 $strtopic = get_string('topic');
+$table = new html_table();
 
 if ($course->format == 'weeks') {
     $table->head  = array ($strweek, $strname);
@@ -95,7 +100,7 @@ foreach ($portfolioacts as $portfolioact) {
 }
 
 echo $OUTPUT->heading(get_string('modulenameplural', 'portfolioact'), 2);
-print_table($table);
+echo html_writer::table($table);
 
 /// Finish the page
 
